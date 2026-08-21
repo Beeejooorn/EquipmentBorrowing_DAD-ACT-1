@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/EquipmentBorrowing.Application/EquipmentBorrowing.Application.csproj" />
+  <Project Path="src/EquipmentBorrowing.Domain/EquipmentBorrowing.Domain.csproj" />
+  <Project Path="src/EquipmentBorrowing.Infrastructure/EquipmentBorrowing.Infrastructure.csproj" />
+  <Project Path="tests/EquipmentBorrowing.Tests/EquipmentBorrowing.Tests.csproj" />
+</Solution>
