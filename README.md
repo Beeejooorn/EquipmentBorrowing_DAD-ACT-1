@@ -77,3 +77,5 @@ No. A button's click handler should call into the Application layer (e.g. `Borro
 Run the `EquipmentBorrowing.ConsoleDemo` project (`F5` or `dotnet run`) to see:
 - **Success case:** Student 1 (allowed to borrow) borrows Equipment 1 (available) → borrowing is created.
 - **Failure case:** Student 2 (not allowed to borrow) attempts to borrow Equipment 1 → request is rejected with an explanation.
+
+"Note: Domain models and repository interfaces were part of earlier local work, committed together during service implementation"
