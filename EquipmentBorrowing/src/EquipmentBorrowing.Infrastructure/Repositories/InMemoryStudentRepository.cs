@@ -12,5 +12,9 @@ public class InMemoryStudentRepository : IStudentRepository
         var student = _students.FirstOrDefault(e => e.Id == id);
         return Task.FromResult(student);
     }
+    public void Seed(IEnumerable<Student> students)
+    {
+        _students.AddRange(students);
+    }
 
 }

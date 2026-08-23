@@ -17,12 +17,18 @@ public class InMemoryEquipmentRepository : IEquipmentRepository
     {
         var existing = _equipment.FirstOrDefault(e => e.Id == equipment.Id);
 
-        if (existing is not null)
-        {
-            _equipment.Remove(existing);
-            _equipment.Add(equipment);
-        }
-
-        return Task.CompletedTask;
+    if (existing is not null)
+    {
+        _equipment.Remove(existing);
+        _equipment.Add(equipment);
     }
+
+    return Task.CompletedTask;
+    }
+
+    public void Seed(IEnumerable<Equipment> equipment)
+    {
+        _equipment.AddRange(equipment);
+    }
+
 }
