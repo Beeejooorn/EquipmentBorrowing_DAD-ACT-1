@@ -35,6 +35,8 @@ else
 }
 
 Console.WriteLine();
+
+
 Console.WriteLine("=== FAILURE CASE ===");
 Console.WriteLine("Student 2 (NOT allowed) trying to borrow Equipment 1...");
 var failureResult = await service.BorrowAsync(studentId: 2, equipmentId: 1);
