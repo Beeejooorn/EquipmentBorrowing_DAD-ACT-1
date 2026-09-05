@@ -18,5 +18,3 @@ public class InMemoryBorrowingRepository : IBorrowingRepository
         var result = _borrowings.Where(b => b.StudentId == studentId && b.Status == BorrowingStatus.Active).ToList();
         return Task.FromResult(result);
     }
-
-}
