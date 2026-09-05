@@ -11,4 +11,9 @@ public interface IEquipmentRepository
     Task UpdateAsync(
         Equipment equipment,
         CancellationToken cancellationToken = default);
-}
+
+    Task<IEnumerable<Equipment>> 
+        GetAllAsync(CancellationToken cancellationToken = default);
+
+    
+}   

@@ -31,4 +31,9 @@ public class InMemoryEquipmentRepository : IEquipmentRepository
         _equipment.AddRange(equipment);
     }
 
+    public Task<IEnumerable<Equipment>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IEnumerable<Equipment>>(_equipment);
+    }
+
 }
