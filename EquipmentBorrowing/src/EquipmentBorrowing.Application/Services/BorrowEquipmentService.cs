@@ -23,9 +23,10 @@ public class BorrowEquipmentService
     }
 
     public async Task<BorrowResult> BorrowAsync(
-        int studentId,
-        int equipmentId,
-        CancellationToken cancellationToken = default)
+    int studentId,
+    int equipmentId,
+    DateTime expectedReturnDate,
+    CancellationToken cancellationToken = default)
     {
         var student = await _studentRepository.GetStudentAsync(studentId, cancellationToken);
 
@@ -37,7 +38,6 @@ public class BorrowEquipmentService
         if (!student.IsAllowedToBorrow)
         {
             return new BorrowResult(false, "Student is not allowed to borrow.", null);
-
         }
 
         var equipment = await _equipmentRepository.GetByIdAsync(equipmentId, cancellationToken);
@@ -45,7 +45,6 @@ public class BorrowEquipmentService
         if (equipment is null)
         {
             return new BorrowResult(false, "Equipment not found.", null);
-
         }
 
         if (!equipment.IsAvailable)
@@ -58,14 +57,14 @@ public class BorrowEquipmentService
         if (activeBorrowings.Count >= MaxActiveBorrowings)
         {
             return new BorrowResult(false, "Student has reached the maximum number of active borrowings.", null);
-
         }
+
         var borrowing = new Borrowing(
             Id: 0,
             StudentId: studentId,
             EquipmentId: equipmentId,
             DateBorrowed: DateTime.UtcNow,
-            ExpectedReturnDate: DateTime.UtcNow.AddDays(7));
+            ExpectedReturnDate: expectedReturnDate);
 
         await _borrowingRepository.AddAsync(borrowing, cancellationToken);
 
@@ -73,7 +72,6 @@ public class BorrowEquipmentService
         await _equipmentRepository.UpdateAsync(equipment, cancellationToken);
 
         return new BorrowResult(true, null, borrowing);
-        // more checks coming next — leave the rest empty for now
-
     }
+
 }
