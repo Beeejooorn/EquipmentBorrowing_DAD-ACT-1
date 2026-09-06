@@ -12,4 +12,7 @@ public interface IBorrowingRepository
         int studentId,
         CancellationToken cancellationToken = default);
 
+    Task<List<Borrowing>> GetAllActiveBorrowingsAsync(
+    CancellationToken cancellationToken = default);
+
 }
