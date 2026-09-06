@@ -23,7 +23,7 @@ var service = new BorrowEquipmentService(studentRepo, equipmentRepo, borrowingRe
 
 Console.WriteLine("=== SUCCESS CASE ===");
 Console.WriteLine("Student 1 (allowed) borrowing Equipment 1 (available)...");
-var successResult = await service.BorrowAsync(studentId: 1, equipmentId: 1);
+var successResult = await service.BorrowAsync(studentId: 1, equipmentId: 1, expectedReturnDate: DateTime.UtcNow.AddDays(7));
 
 if (successResult.IsSuccess)
 {
@@ -39,8 +39,7 @@ Console.WriteLine();
 
 Console.WriteLine("=== FAILURE CASE ===");
 Console.WriteLine("Student 2 (NOT allowed) trying to borrow Equipment 1...");
-var failureResult = await service.BorrowAsync(studentId: 2, equipmentId: 1);
-
+var failureResult = await service.BorrowAsync(studentId: 2, equipmentId: 1, expectedReturnDate: DateTime.UtcNow.AddDays(7));
 if (failureResult.IsSuccess)
 {
     Console.WriteLine("Unexpectedly succeeded.");

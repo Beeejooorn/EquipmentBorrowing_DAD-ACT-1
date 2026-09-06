@@ -16,5 +16,10 @@ public class InMemoryStudentRepository : IStudentRepository
     {
         _students.AddRange(students);
     }
-    
+
+    public Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IEnumerable<Student>>(_students);
+    }
+
 }
