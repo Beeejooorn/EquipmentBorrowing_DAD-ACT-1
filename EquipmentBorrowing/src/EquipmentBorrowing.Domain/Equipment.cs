@@ -17,4 +17,10 @@ public class Equipment
     {
         this.IsAvailable = false;
     }
+
+    public void MarkAsAvailable()
+    {
+        this.IsAvailable = true;
+    }
+
 }
