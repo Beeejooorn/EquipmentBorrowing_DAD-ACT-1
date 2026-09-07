@@ -79,3 +79,59 @@ Run the `EquipmentBorrowing.ConsoleDemo` project (`F5` or `dotnet run`) to see:
 - **Failure case:** Student 2 (not allowed to borrow) attempts to borrow Equipment 1 → request is rejected with an explanation.
 
 "Note: Domain models and repository interfaces were part of earlier local work, committed together during service implementation"
+
+
+---
+
+## Activity 2: Avalonia UI and MVVM
+
+### 1. Desktop Project
+
+`EquipmentBorrowing.Desktop` is the presentation layer — it displays information, collects user input, and translates user actions into calls on existing Application services. It references `Application` (to call `BorrowEquipmentService`, `ReturnEquipmentService`, and the query services) and `Infrastructure` (only in the composition root, to construct the concrete in-memory repositories). Domain and Application remain completely unaware that Avalonia exists.
+
+### 2. Updated Architecture
+
+```text
+Avalonia View
+     │
+     │ Binding / Command
+     ▼
+ViewModel
+     │
+     │ Application Operation
+     ▼
+Application Service
+     │
+     ├──────────► Domain
+     │
+     ▼
+Repository Interface
+     ▲
+     │
+Infrastructure Implementation
+```
+
+### 3. Borrow Equipment Flow
+
+1. User selects a student, equipment item, and expected return date, then presses **Borrow Equipment**.
+2. `EquipmentViewModel.BorrowCommand` runs presentation validation (are all three fields filled?).
+3. If valid, it calls `BorrowEquipmentService.BorrowAsync(studentId, equipmentId, expectedReturnDate)`.
+4. The service checks all six business rules (student exists/allowed, equipment exists/available, borrowing limit) against the repositories, and either creates the `Borrowing` or returns a failure reason.
+5. The ViewModel sets `StatusMessage` from the result and reloads the equipment list so availability updates on screen.
+
+### 4. Return Equipment Flow
+
+1. User selects an active borrowing from the list and presses **Return Equipment**.
+2. `BorrowingsViewModel.ReturnCommand` checks a borrowing is actually selected.
+3. It calls `ReturnEquipmentService.ReturnAsync(borrowing)`, passing the already-selected `Borrowing` object directly (no re-lookup by ID needed).
+4. The service validates it isn't already returned, marks it returned, marks the equipment available again, and saves the equipment update.
+5. The ViewModel displays the result and reloads the active borrowings list.
+
+### 5. Architectural Reflection
+
+1. **Why should the View not call a repository directly?** The View would need to know about concrete storage details (in-memory lists, eventually SQL), breaking the separation the whole architecture is built on, and making the UI impossible to test or swap without rewriting screens.
+2. **Why should business rules not be implemented in the ViewModel?** Rules like borrowing limits or availability checks would then be duplicated across every screen that needs them, and could drift out of sync. Keeping them in one Application service means one place to fix, one place to trust.
+3. **What is the responsibility of the ViewModel?** Hold presentation state (selected items, lists, status messages) and translate user actions into calls on Application services — nothing more.
+4. **Why can the existing Application layer work without knowing that Avalonia is being used?** It only depends on repository interfaces and Domain objects — plain C#, no UI framework references. Any UI technology (console, Avalonia, web) can sit on top of it unchanged.
+5. **What advantage is gained from registering dependencies in one composition point?** Only `App.axaml.cs` needs to change if repositories are swapped (e.g., for SQLite) — every Service, ViewModel, and View stays untouched because they only ever depend on interfaces.
+6. **If the in-memory repository were replaced by SQLite later, which parts of the current interface should remain largely unchanged?** All Views, ViewModels, and Application services — only the repository implementations and the one line in the composition root registering them would change. 
