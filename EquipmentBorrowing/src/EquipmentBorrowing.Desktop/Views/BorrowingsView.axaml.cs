@@ -2,9 +2,9 @@ namespace EquipmentBorrowing.Desktop.Views;
 
 using Avalonia.Controls;
 
-public partial class MainWindow : Window
+public partial class BorrowingsView : UserControl
 {
-    public MainWindow()
+    public BorrowingsView()
     {
         InitializeComponent();
     }

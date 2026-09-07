@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
+             xmlns:models="using:EquipmentBorrowing.Desktop.Models"
+             x:Class="EquipmentBorrowing.Desktop.Views.BorrowingsView"
+             x:DataType="vm:BorrowingsViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="10">
+
+        <TextBlock Grid.Row="0" Text="Active Borrowings" Classes="Heading" />
+
+        <ListBox Grid.Row="1" ItemsSource="{Binding ActiveBorrowings}"
+                 SelectedItem="{Binding SelectedBorrowing}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="models:BorrowingDisplayItem">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding StudentName}" Width="120" />
+                        <TextBlock Text="{Binding EquipmentName}" Width="120" />
+                        <TextBlock Text="{Binding Borrowing.ExpectedReturnDate, StringFormat='Due {0:d}'}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Button Grid.Row="2" Content="Return Equipment" Command="{Binding ReturnCommand}"
+                Classes="Primary" Margin="0,10" HorizontalAlignment="Left" />
+
+        <TextBlock Grid.Row="3" Text="{Binding StatusMessage}" Classes="StatusMessage" />
+
+    </Grid>
+</UserControl>

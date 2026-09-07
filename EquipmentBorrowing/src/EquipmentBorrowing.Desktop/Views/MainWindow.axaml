@@ -7,15 +7,20 @@
         x:Class="EquipmentBorrowing.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="EquipmentBorrowing.Desktop">
-
-	<Design.DataContext>
-		<vm:MainViewModel />
-	</Design.DataContext>
+        Title="Campus Equipment Borrowing System">
 
 	<Grid ColumnDefinitions="200,*">
-		<TextBlock Grid.Column="0" Text="Menu" Margin="10" />
-		<TextBlock Grid.Column="1" Text="Content" Margin="10" />
+
+		<StackPanel Grid.Column="0" Spacing="10" Margin="10">
+			<TextBlock Text="Menu" Classes="Heading" />
+			<Button Content="Equipment" Command="{Binding ShowEquipmentCommand}"
+                    Classes="NavButton" HorizontalAlignment="Stretch" />
+			<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
+                    Classes="NavButton" HorizontalAlignment="Stretch" />
+		</StackPanel>
+
+		<ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Margin="10" />
+
 	</Grid>
 
 </Window>
