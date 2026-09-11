@@ -129,9 +129,14 @@ Infrastructure Implementation
 
 ### 5. Architectural Reflection
 
-1. **Why should the View not call a repository directly?** The View would need to know about concrete storage details (in-memory lists, eventually SQL), breaking the separation the whole architecture is built on, and making the UI impossible to test or swap without rewriting screens.
-2. **Why should business rules not be implemented in the ViewModel?** Rules like borrowing limits or availability checks would then be duplicated across every screen that needs them, and could drift out of sync. Keeping them in one Application service means one place to fix, one place to trust.
-3. **What is the responsibility of the ViewModel?** Hold presentation state (selected items, lists, status messages) and translate user actions into calls on Application services — nothing more.
-4. **Why can the existing Application layer work without knowing that Avalonia is being used?** It only depends on repository interfaces and Domain objects — plain C#, no UI framework references. Any UI technology (console, Avalonia, web) can sit on top of it unchanged.
-5. **What advantage is gained from registering dependencies in one composition point?** Only `App.axaml.cs` needs to change if repositories are swapped (e.g., for SQLite) — every Service, ViewModel, and View stays untouched because they only ever depend on interfaces.
-6. **If the in-memory repository were replaced by SQLite later, which parts of the current interface should remain largely unchanged?** All Views, ViewModels, and Application services — only the repository implementations and the one line in the composition root registering them would change. 
+1. **Why should the View not call a repository directly?** If the View called the repository directly, it would be locked to one specific storage method (in-memory lists). Later, if we swapped to SQLite, the View itself would need to change — breaking the whole point of separating layers. Keeping the View away from repositories means the UI stays untouched no matter how data is actually stored.
+
+2. **Why should business rules not be implemented in the ViewModel?** If business rules like borrowing limits were written inside the ViewModel, and another screen later needed the same rule, we'd end up duplicating that logic in two places. If the rule ever changed, we'd risk forgetting to update it everywhere it was copied — leading to inconsistent behavior. Keeping rules in one Application service means there's only one place to trust and one place to fix.
+
+3. **What is the responsibility of the ViewModel?** The ViewModel holds presentation state (like SelectedEquipment, StatusMessage) and exposes commands (BorrowCommand) that the View can bind to. It doesn't decide whether a borrow is allowed — it just collects what the user picked and forwards it to the Application service, which does the actual checking.
+
+4. **Why can the existing Application layer work without knowing that Avalonia is being used?** The Application layer only depends on repository interfaces and Domain objects — nothing in BorrowEquipmentService.cs references Avalonia at all. Because it only knows about plain C# interfaces, any UI technology (console, Avalonia, web) can be built on top of it without changing anything inside Application.
+
+5. **What advantage is gained from registering dependencies in one composition point?** Only App.axaml.cs needs to change if we ever swap repositories — for example, replacing InMemoryEquipmentRepository with a real SQLite one. Since every ViewModel and service just asks the DI container for an interface, none of them need to be touched, which lowers the risk of forgetting to update something elsewhere.
+
+6. **If the in-memory repository were replaced by SQLite later, which parts of the current interface should remain largely unchanged?** Views, ViewModels, and Application services would all stay unchanged. Only the Infrastructure implementations (the InMemory... repository classes) would need to be replaced with SQLite versions, along with the one registration line in App.axaml.cs that wires them up.
