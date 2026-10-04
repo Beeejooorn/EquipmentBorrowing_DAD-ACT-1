@@ -140,3 +140,107 @@ Infrastructure Implementation
 5. **What advantage is gained from registering dependencies in one composition point?** Only App.axaml.cs needs to change if we ever swap repositories — for example, replacing InMemoryEquipmentRepository with a real SQLite one. Since every ViewModel and service just asks the DI container for an interface, none of them need to be touched, which lowers the risk of forgetting to update something elsewhere.
 
 6. **If the in-memory repository were replaced by SQLite later, which parts of the current interface should remain largely unchanged?** Views, ViewModels, and Application services would all stay unchanged. Only the Infrastructure implementations (the InMemory... repository classes) would need to be replaced with SQLite versions, along with the one registration line in App.axaml.cs that wires them up.
+
+---
+
+# Laboratory Activity 3 – From In-Memory Data to Persistent Storage
+
+## 1. Relational Database Design
+
+![Database Diagram](docs/database-diagram.png)
+
+| Table | Columns | Keys / Constraints |
+|---|---|---|
+| Students | Id, Name (max 100), IsAllowedToBorrow | PK: Id |
+| Equipment | Id, Name (max 100), IsAvailable | PK: Id; UNIQUE index on Name |
+| Borrowings | Id, StudentId, EquipmentId, DateBorrowed, ExpectedReturnDate, ReturnedAt (nullable), Status (text, max 20) | PK: Id; FK: StudentId to Students.Id; FK: EquipmentId to Equipment.Id; indexes on StudentId, EquipmentId, Status |
+
+A student can have many borrowings, and a piece of equipment can appear in many borrowings over time. A borrowing stores IDs instead of copying student or equipment details, so each fact is stored once. `ReturnedAt` is the only optional column because it stays empty until the item is returned. Sample SQL is in `docs/database-queries.sql`.
+
+## 2. SQLite and EF Core
+
+The packages `Microsoft.EntityFrameworkCore.Sqlite` and `Microsoft.EntityFrameworkCore.Design` were added to the Infrastructure project, and the `dotnet-ef` tool was installed globally. All database code stays in Infrastructure. The Desktop project only registers the services at startup, in `App.axaml.cs`.
+
+## 3. DbContext
+
+`EquipmentBorrowingDbContext` represents the database. It exposes a `DbSet` for each table (Students, Equipment, Borrowings) and loads the entity configurations (`StudentConfiguration`, `EquipmentConfiguration`, `BorrowingConfiguration`). These define the keys, required fields, maximum lengths, the unique index, the foreign keys, and the enum-to-text conversion for `Status`. The domain classes contain no persistence code.
+
+## 4. Repository Transition
+
+Before:
+
+    Repository Interface -> In-Memory Repository
+
+After:
+
+    Repository Interface -> EF Core Repository -> DbContext -> SQLite
+
+`EfStudentRepository`, `EfEquipmentRepository`, and `EfBorrowingRepository` implement the same interfaces as the in-memory versions. The services and ViewModels did not change, except that `UpdateAsync` was added to `IBorrowingRepository` and `GetAvailableAsync` to `IEquipmentRepository`. The registrations in `App.axaml.cs` now point to the EF repositories. The database file is stored at `%LocalAppData%\EquipmentBorrowing\equipmentborrowing.db`.
+
+## 5. Migration Process
+
+Create the migration:
+
+    dotnet ef migrations add InitialCreate --project src\EquipmentBorrowing.Infrastructure --output-dir Migrations
+
+A second migration, `AddSeedData`, inserts the initial students and equipment:
+
+    dotnet ef migrations add AddSeedData --project src\EquipmentBorrowing.Infrastructure --output-dir Migrations
+
+Apply the migrations:
+
+    dotnet ef database update --project src\EquipmentBorrowing.Infrastructure
+
+The app also calls `Database.Migrate()` at startup. It creates the database on first run and leaves existing data untouched afterwards.
+
+Seed data: students Ana Reyes, Ben Cruz, Carla Santos (not allowed to borrow); equipment Laptop 01, Laptop 02, Projector 01, Camera 01 (unavailable).
+
+## 6. Generated SQL
+
+**Query 1: Active borrowings**
+
+    _context.Borrowings.AsNoTracking()
+        .Where(b => b.Status == BorrowingStatus.Active)
+        .ToListAsync();
+
+Generated SQL:
+
+    SELECT "b"."Id", "b"."DateBorrowed", "b"."EquipmentId", "b"."ExpectedReturnDate",
+           "b"."ReturnedAt", "b"."Status", "b"."StudentId"
+    FROM "Borrowings" AS "b"
+    WHERE "b"."Status" = 'Active'
+
+Explanation: EF Core turns the enum comparison into a text comparison because `Status` is stored as text, and filters the rows in the database.
+
+**Query 2: All equipment**
+
+    _context.Equipment.AsNoTracking().ToListAsync();
+
+Generated SQL:
+
+    SELECT "e"."Id", "e"."IsAvailable", "e"."Name"
+    FROM "Equipment" AS "e"
+
+Explanation: a plain SELECT of every equipment row. LINQ does not remove SQL; EF Core translates the C# query into SQL.
+
+**Query 3: Available equipment** (`GetAvailableAsync`) filters on `IsAvailable` and orders by `Name`.
+
+**Tracking:** display-only queries (equipment list, active borrowings, students) use `AsNoTracking()` because nothing is modified, so EF skips change-tracking and uses less memory. `EfEquipmentRepository.GetByIdAsync` is tracked because the service changes the equipment and saves it.
+
+## 7. Persistence Demonstration
+
+1. Started the app and borrowed Laptop 02 as Ana Reyes. The borrowing appeared in Active Borrowings.
+2. Closed the app completely and started it again. The borrowing was still listed.
+3. Returned the equipment, closed and restarted the app. Active Borrowings was empty and Laptop 02 showed Available: True.
+
+Screenshots are in the `screenshots/` folder.
+
+## 8. Architectural Reflection
+
+1. **Why was no rewrite needed?** The services depend on repository interfaces, so only the repository implementations and the dependency registrations were swapped.
+2. **Why should the ViewModel not use DbContext directly?** It would tie the UI to EF Core and SQLite, mix presentation with persistence, bypass the business rules in the services, and make testing and later changes harder.
+3. **What does the repository implementation do now?** It translates application requests (get, add, update) into EF Core queries and saves changes to SQLite.
+4. **Purpose of a migration:** it records schema changes as versioned code, so the database can be created and reproduced from the project history.
+5. **Why are foreign keys important?** They guarantee every borrowing points to an existing student and equipment, preventing orphan records.
+6. **Why does a read-only query benefit from AsNoTracking()?** EF does not need to track entities that will not be modified, which saves memory and time.
+7. **If SQLite were replaced by another provider:** only the provider package, connection string, and migrations would change in Infrastructure and the composition root. Domain, Application, ViewModels, and Views would stay the same.
