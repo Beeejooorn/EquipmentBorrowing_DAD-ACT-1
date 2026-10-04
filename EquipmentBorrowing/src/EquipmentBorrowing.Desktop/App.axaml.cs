@@ -52,7 +52,10 @@ public partial class App : Avalonia.Application
         var dbPath = Path.Combine(folder, "equipmentborrowing.db");
 
         services.AddDbContext<EquipmentBorrowingDbContext>(
-            options => options.UseSqlite($"Data Source={dbPath}"),
+            options => options
+                .UseSqlite($"Data Source={dbPath}")
+                .LogTo(message => System.Diagnostics.Debug.WriteLine(message),
+                       Microsoft.Extensions.Logging.LogLevel.Information),
             ServiceLifetime.Transient);
 
         services.AddTransient<IEquipmentRepository, EfEquipmentRepository>();
