@@ -39,15 +39,18 @@
 
 							<TextBlock Grid.Column="0"
                                        Text="ID"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
 
 							<TextBlock Grid.Column="1"
                                        Text="Equipment"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
 
 							<TextBlock Grid.Column="2"
                                        Text="Availability"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
 
 						</Grid>
 
@@ -185,10 +188,12 @@
                                     Spacing="8">
 
 							<TextBlock Text="Status:"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
 
 							<TextBlock Text="{Binding StatusMessage}"
-                                       TextWrapping="Wrap"/>
+                                       TextWrapping="Wrap"
+                                       Foreground="Black"/>
 
 						</StackPanel>
 
