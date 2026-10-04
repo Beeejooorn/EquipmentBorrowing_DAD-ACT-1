@@ -15,5 +15,8 @@ public interface IEquipmentRepository
     Task<IEnumerable<Equipment>> 
         GetAllAsync(CancellationToken cancellationToken = default);
 
-    
+    Task<IEnumerable<Equipment>> GetAvailableAsync(
+        CancellationToken cancellationToken = default);
+
+
 }   

@@ -37,4 +37,14 @@ public class EfEquipmentRepository : IEquipmentRepository
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Equipment>> GetAvailableAsync(
+    CancellationToken cancellationToken = default)
+    {
+        return await _context.Equipment
+            .AsNoTracking()
+            .Where(e => e.IsAvailable)
+            .OrderBy(e => e.Name)
+            .ToListAsync(cancellationToken);
+    }
 }
