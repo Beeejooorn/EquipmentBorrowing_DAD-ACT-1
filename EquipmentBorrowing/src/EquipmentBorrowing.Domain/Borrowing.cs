@@ -8,6 +8,7 @@ public class Borrowing
     public DateTime DateBorrowed { get; }
     public DateTime ExpectedReturnDate { get; }
     public BorrowingStatus Status { get; private set; }
+    public DateTime? ReturnedAt { get; private set; }
 
     public Borrowing(int Id, int StudentId, int EquipmentId, DateTime DateBorrowed, DateTime ExpectedReturnDate)
     {
@@ -19,8 +20,9 @@ public class Borrowing
         this.Status = BorrowingStatus.Active;
     }
 
-    public void MarkAsReturned()
+    public void MarkAsReturned(DateTime returnedAt)
     {
-        this.Status = BorrowingStatus.Returned;
+        Status = BorrowingStatus.Returned;
+        ReturnedAt = returnedAt;
     }
 }   

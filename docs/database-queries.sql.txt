@@ -1,0 +1,27 @@
+-- 1. Basic retrieval
+SELECT * FROM Equipment;
+
+-- 2. Filtering: available equipment only
+SELECT * FROM Equipment WHERE IsAvailable = 1;
+
+-- 3. Join: active borrowings with student and equipment
+SELECT s.Name AS Student,
+       e.Name AS Equipment,
+       b.DateBorrowed AS Borrowed,
+       b.ExpectedReturnDate AS Due
+FROM Borrowings b
+JOIN Students  s ON s.Id = b.StudentId
+JOIN Equipment e ON e.Id = b.EquipmentId
+WHERE b.Status = 'Active';
+
+-- 4. Aggregate: number of active borrowings per student
+SELECT s.Name, COUNT(*) AS ActiveCount
+FROM Borrowings b
+JOIN Students s ON s.Id = b.StudentId
+WHERE b.Status = 'Active'
+GROUP BY s.Id, s.Name;
+
+-- 5. Update: mark a borrowing as returned
+UPDATE Borrowings
+SET Status = 'Returned', ReturnedAt = '2026-10-10 09:00:00'
+WHERE Id = 1;
