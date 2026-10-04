@@ -24,4 +24,10 @@ public class InMemoryBorrowingRepository : IBorrowingRepository
         var result = _borrowings.Where(b => b.Status == BorrowingStatus.Active).ToList();
         return Task.FromResult(result);
     }
+
+    public Task UpdateAsync(Borrowing borrowing, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
 }

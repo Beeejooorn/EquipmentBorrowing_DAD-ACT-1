@@ -15,4 +15,8 @@ public interface IBorrowingRepository
     Task<List<Borrowing>> GetAllActiveBorrowingsAsync(
     CancellationToken cancellationToken = default);
 
+    Task UpdateAsync(
+    Borrowing borrowing,
+    CancellationToken cancellationToken = default);
+
 }

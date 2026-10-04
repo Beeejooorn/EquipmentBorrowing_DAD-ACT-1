@@ -6,10 +6,12 @@ using EquipmentBorrowing.Domain;
 public class ReturnEquipmentService
 {
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IBorrowingRepository _borrowingRepository;
 
-    public ReturnEquipmentService(IEquipmentRepository equipmentRepository)
+    public ReturnEquipmentService(IEquipmentRepository equipmentRepository, IBorrowingRepository borrowingRepository)
     {
         _equipmentRepository = equipmentRepository;
+        _borrowingRepository = borrowingRepository;
     }
 
     public async Task<ReturnResult> ReturnAsync(
@@ -29,6 +31,7 @@ public class ReturnEquipmentService
         }
 
         borrowing.MarkAsReturned(DateTime.Now);
+        await _borrowingRepository.UpdateAsync(borrowing, cancellationToken);
         equipment.MarkAsAvailable();
 
         await _equipmentRepository.UpdateAsync(equipment, cancellationToken);
