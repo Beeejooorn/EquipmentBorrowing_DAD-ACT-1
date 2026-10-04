@@ -28,7 +28,7 @@ public class ReturnEquipmentService
             return new ReturnResult(false, "Associated equipment record not found.");
         }
 
-        borrowing.MarkAsReturned();
+        borrowing.MarkAsReturned(DateTime.Now);
         equipment.MarkAsAvailable();
 
         await _equipmentRepository.UpdateAsync(equipment, cancellationToken);
