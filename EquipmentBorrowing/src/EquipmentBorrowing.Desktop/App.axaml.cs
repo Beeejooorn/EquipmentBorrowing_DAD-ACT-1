@@ -4,9 +4,12 @@ using EquipmentBorrowing.Application.Interfaces;
 using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Desktop.ViewModels;
 using EquipmentBorrowing.Desktop.Views;
-using EquipmentBorrowing.Domain;
+using EquipmentBorrowing.Infrastructure.Persistence;
 using EquipmentBorrowing.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 
 namespace EquipmentBorrowing.Desktop;
 
@@ -25,6 +28,12 @@ public partial class App : Avalonia.Application
             ConfigureServices(services);
             var provider = services.BuildServiceProvider();
 
+            // Create the database / apply pending migrations (seeds on first run only).
+            using (var context = provider.GetRequiredService<EquipmentBorrowingDbContext>())
+            {
+                context.Database.Migrate();
+            }
+
             desktop.MainWindow = new MainWindow
             {
                 DataContext = provider.GetRequiredService<MainViewModel>(),
@@ -36,26 +45,19 @@ public partial class App : Avalonia.Application
 
     private static void ConfigureServices(ServiceCollection services)
     {
-        var equipmentRepository = new InMemoryEquipmentRepository();
-        equipmentRepository.Seed(new[]
-        {
-            new Equipment(1, "Digital Camera", true),
-            new Equipment(2, "Tripod", true),
-            new Equipment(3, "Projector", true),
-        });
+        var folder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "EquipmentBorrowing");
+        Directory.CreateDirectory(folder);
+        var dbPath = Path.Combine(folder, "equipmentborrowing.db");
 
-        var studentRepository = new InMemoryStudentRepository();
-        studentRepository.Seed(new[]
-        {
-            new Student(1, "Juan Dela Cruz", true),
-            new Student(2, "Maria Santos", false),
-        });
+        services.AddDbContext<EquipmentBorrowingDbContext>(
+            options => options.UseSqlite($"Data Source={dbPath}"),
+            ServiceLifetime.Transient);
 
-        var borrowingRepository = new InMemoryBorrowingRepository();
-
-        services.AddSingleton<IEquipmentRepository>(equipmentRepository);
-        services.AddSingleton<IStudentRepository>(studentRepository);
-        services.AddSingleton<IBorrowingRepository>(borrowingRepository);
+        services.AddTransient<IEquipmentRepository, EfEquipmentRepository>();
+        services.AddTransient<IStudentRepository, EfStudentRepository>();
+        services.AddTransient<IBorrowingRepository, EfBorrowingRepository>();
 
         services.AddTransient<BorrowEquipmentService>();
         services.AddTransient<ReturnEquipmentService>();
