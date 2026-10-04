@@ -14,5 +14,13 @@ public class EquipmentConfiguration : IEntityTypeConfiguration<Equipment>
         builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
         builder.Property(e => e.IsAvailable).IsRequired();
         builder.HasIndex(e => e.Name).IsUnique();
+
+        builder.HasData(
+            new Equipment(1, "Laptop 01", true),
+            new Equipment(2, "Laptop 02", true),
+            new Equipment(3, "Projector 01", true),
+            new Equipment(4, "Camera 01", false)
+        );
+
     }
 }

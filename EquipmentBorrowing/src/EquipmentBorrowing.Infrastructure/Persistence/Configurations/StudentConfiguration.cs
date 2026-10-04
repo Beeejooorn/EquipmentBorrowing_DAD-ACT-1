@@ -13,5 +13,15 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.Property(s => s.Id).ValueGeneratedOnAdd();
         builder.Property(s => s.Name).IsRequired().HasMaxLength(100);
         builder.Property(s => s.IsAllowedToBorrow).IsRequired();
+
+        builder.HasData(
+            new Student(1, "Ana Reyes", true),
+            new Student(2, "Ben Cruz", true),
+            new Student(3, "Carla Santos", false)
+        );
+
     }
+
+
+
 }
