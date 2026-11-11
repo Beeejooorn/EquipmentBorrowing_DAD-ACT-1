@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
+             xmlns:domain="using:EquipmentBorrowing.Domain"
+             x:Class="EquipmentBorrowing.Desktop.Views.EquipmentManagementView"
+             x:DataType="vm:EquipmentManagementViewModel">
+
+	<ScrollViewer>
+
+		<StackPanel Margin="25" Spacing="15">
+
+			<!-- PAGE TITLE -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Manage Equipment" FontSize="26" FontWeight="Bold"/>
+				<TextBlock Text="Register new equipment and edit the code, name or description of existing items."
+                           FontSize="14" Opacity="0.65"/>
+			</StackPanel>
+
+			<Grid ColumnDefinitions="*,20,*">
+
+				<!-- LEFT: FIND AND SELECT AN ITEM -->
+				<Border Grid.Column="0" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+					<StackPanel Spacing="10">
+
+						<TextBlock Text="Find equipment" Classes="SectionTitle"/>
+						<TextBlock Text="Search by equipment code or name (part of it is enough)." FontSize="12" Opacity="0.65"/>
+
+						<Grid ColumnDefinitions="*,Auto,Auto">
+							<TextBox Grid.Column="0" Text="{Binding SearchText}"/>
+							<Button Grid.Column="1" Content="Search" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
+							<Button Grid.Column="2" Content="Show All" Command="{Binding ShowAllCommand}" Margin="8,0,0,0"/>
+						</Grid>
+
+						<!-- LOADING / ERROR / EMPTY -->
+						<StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ListState.IsLoading}">
+							<ProgressBar IsIndeterminate="True" Width="160"/>
+							<TextBlock Text="Loading equipment..."/>
+						</StackPanel>
+
+						<Border Classes="Feedback Error" IsVisible="{Binding ListState.HasError}">
+							<StackPanel Spacing="8">
+								<TextBlock Text="{Binding ListState.ErrorMessage}"/>
+								<Button Content="Retry" Command="{Binding LoadCommand}"/>
+							</StackPanel>
+						</Border>
+
+						<TextBlock Classes="EmptyState"
+                                   Text="{Binding ListState.EmptyMessage}"
+                                   IsVisible="{Binding ListState.IsEmpty}"/>
+
+						<!-- EQUIPMENT LIST -->
+						<ListBox ItemsSource="{Binding EquipmentList}"
+                                 SelectedItem="{Binding SelectedEquipment}"
+                                 MaxHeight="420">
+							<ListBox.ItemTemplate>
+								<DataTemplate x:DataType="domain:Equipment">
+									<Grid ColumnDefinitions="100,*,90" Margin="2">
+										<TextBlock Grid.Column="0" Text="{Binding EquipmentCode}"/>
+										<TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+										<StackPanel Grid.Column="2">
+											<TextBlock Text="Available" Classes="Available" IsVisible="{Binding IsAvailable}"/>
+											<TextBlock Text="Borrowed" Classes="Unavailable" IsVisible="{Binding !IsAvailable}"/>
+										</StackPanel>
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+					</StackPanel>
+				</Border>
+
+				<!-- RIGHT: FORM -->
+				<StackPanel Grid.Column="2" Spacing="15">
+
+					<!-- REGISTER / EDIT (UC-15, UC-16) -->
+					<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+						<StackPanel Spacing="8">
+
+							<TextBlock Text="Equipment details" Classes="SectionTitle"/>
+							<TextBlock Text="To register: click Clear Form, fill in the fields and click Register. To edit: select an item, change the fields and click Save Changes."
+                                       FontSize="12" Opacity="0.65" TextWrapping="Wrap"/>
+
+							<TextBlock Text="Equipment code (required)" FontWeight="SemiBold" Margin="0,6,0,0"/>
+							<TextBox Text="{Binding FormEquipmentCode}"/>
+
+							<TextBlock Text="Name (required)" FontWeight="SemiBold"/>
+							<TextBox Text="{Binding FormName}"/>
+
+							<TextBlock Text="Description or type (optional)" FontWeight="SemiBold"/>
+							<TextBox Text="{Binding FormDescription}"/>
+
+							<WrapPanel Margin="0,8,0,0">
+								<Button Content="Register New Equipment" Command="{Binding RegisterCommand}" Classes="Primary" Margin="0,0,8,8"/>
+								<Button Content="Save Changes to Selected" Command="{Binding SaveChangesCommand}" Classes="Primary" Margin="0,0,8,8"/>
+								<Button Content="Clear Form" Command="{Binding ClearFormCommand}" Margin="0,0,8,8"/>
+							</WrapPanel>
+
+						</StackPanel>
+					</Border>
+
+					<!-- AVAILABILITY (read-only on purpose, BR-07) -->
+					<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+						<StackPanel Spacing="8">
+
+							<TextBlock Text="Availability" Classes="SectionTitle"/>
+							<TextBlock Text="{Binding SelectedEquipmentTitle}" FontWeight="SemiBold"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasSelectedEquipment}">
+								<TextBlock Text="Current status:"/>
+								<TextBlock Text="Available" Classes="Available" IsVisible="{Binding IsSelectedEquipmentAvailable}"/>
+								<TextBlock Text="Borrowed" Classes="Unavailable" IsVisible="{Binding !IsSelectedEquipmentAvailable}"/>
+							</StackPanel>
+
+							<TextBlock Text="Availability cannot be edited here. It changes only when the item is borrowed or returned, so it always matches the borrowing records."
+                                       FontSize="12" Opacity="0.65" TextWrapping="Wrap"/>
+
+						</StackPanel>
+					</Border>
+
+					<!-- RESULT MESSAGE -->
+					<Border Classes="Feedback"
+                            Classes.Success="{Binding IsStatusSuccess}"
+                            Classes.Rejected="{Binding IsStatusRejected}"
+                            Classes.Error="{Binding IsStatusError}"
+                            IsVisible="{Binding HasStatus}">
+						<TextBlock Text="{Binding StatusMessage}"/>
+					</Border>
+
+				</StackPanel>
+
+			</Grid>
+
+		</StackPanel>
+
+	</ScrollViewer>
+
+</UserControl>

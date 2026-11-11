@@ -29,6 +29,8 @@
                         Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Students" Command="{Binding ShowStudentsCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
+				<Button Content="Manage Equipment" Command="{Binding ShowEquipmentManagementCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
 			</StackPanel>
 
 			<ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Margin="10" />

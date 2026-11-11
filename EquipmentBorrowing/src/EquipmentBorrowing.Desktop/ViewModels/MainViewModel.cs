@@ -8,6 +8,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly EquipmentViewModel _equipmentViewModel;
     private readonly BorrowingsViewModel _borrowingsViewModel;
     private readonly StudentsViewModel _studentsViewModel;
+    private readonly EquipmentManagementViewModel _equipmentManagementViewModel;
 
     [ObservableProperty]
     private ViewModelBase currentViewModel;
@@ -25,11 +26,13 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(
         EquipmentViewModel equipmentViewModel,
         BorrowingsViewModel borrowingsViewModel,
-        StudentsViewModel studentsViewModel)
+        StudentsViewModel studentsViewModel,
+        EquipmentManagementViewModel equipmentManagementViewModel)
     {
         _equipmentViewModel = equipmentViewModel;
         _borrowingsViewModel = borrowingsViewModel;
         _studentsViewModel = studentsViewModel;
+        _equipmentManagementViewModel = equipmentManagementViewModel;
 
         currentViewModel = _equipmentViewModel;
         _ = _equipmentViewModel.LoadAsync();
@@ -57,5 +60,12 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentViewModel = _studentsViewModel;
         _ = _studentsViewModel.LoadAsync();
+    }
+
+    [RelayCommand]
+    private void ShowEquipmentManagement()
+    {
+        CurrentViewModel = _equipmentManagementViewModel;
+        _ = _equipmentManagementViewModel.LoadAsync();
     }
 }
