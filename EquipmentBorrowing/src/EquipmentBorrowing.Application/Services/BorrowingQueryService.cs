@@ -55,6 +55,24 @@ public class BorrowingQueryService
         }
     }
 
+    // UC-09 Search, Filter and Sort Borrowings (BR-17).
+    // No matches is a normal, empty result, not an error.
+    public async Task<QueryResult<BorrowingRecord>> SearchBorrowingsAsync(
+        BorrowingSearchCriteria criteria,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+            List<BorrowingRecord> records = await unitOfWork.Borrowings.SearchAsync(criteria, cancellationToken);
+            return QueryResult<BorrowingRecord>.Ok(records);
+        }
+        catch (Exception ex)
+        {
+            return QueryResult<BorrowingRecord>.Error(DatabaseErrors.ToLoadMessage(_errorClassifier.Classify(ex)));
+        }
+    }
+
     // UC-08 View Equipment Borrowing History (active and returned, only this item).
     public async Task<QueryResult<BorrowingRecord>> GetEquipmentHistoryAsync(int equipmentId, CancellationToken cancellationToken = default)
     {

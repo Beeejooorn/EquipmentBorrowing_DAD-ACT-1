@@ -1,0 +1,129 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
+             xmlns:models="using:EquipmentBorrowing.Application.Models"
+             x:Class="EquipmentBorrowing.Desktop.Views.BorrowingSearchView"
+             x:DataType="vm:BorrowingSearchViewModel">
+
+	<ScrollViewer>
+
+		<StackPanel Margin="25" Spacing="15">
+
+			<!-- PAGE TITLE -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Search Borrowings" FontSize="26" FontWeight="Bold"/>
+				<TextBlock Text="Search all borrowings (active and returned), filter by status and sort by date. The options can be combined."
+                           FontSize="14" Opacity="0.65"/>
+			</StackPanel>
+
+			<!-- SEARCH CRITERIA -->
+			<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+				<StackPanel Spacing="10">
+
+					<TextBlock Text="Search text (student name, student number or equipment name, part of it is enough)" FontWeight="SemiBold"/>
+					<TextBox Text="{Binding SearchText}"/>
+
+					<Grid ColumnDefinitions="*,15,*,15,*">
+						<StackPanel Grid.Column="0" Spacing="4">
+							<TextBlock Text="Status" FontWeight="SemiBold"/>
+							<ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}"
+                                      HorizontalAlignment="Stretch"/>
+						</StackPanel>
+						<StackPanel Grid.Column="2" Spacing="4">
+							<TextBlock Text="Sort by" FontWeight="SemiBold"/>
+							<ComboBox ItemsSource="{Binding SortFieldOptions}" SelectedItem="{Binding SelectedSortField}"
+                                      HorizontalAlignment="Stretch"/>
+						</StackPanel>
+						<StackPanel Grid.Column="4" Spacing="4">
+							<TextBlock Text="Direction" FontWeight="SemiBold"/>
+							<ComboBox ItemsSource="{Binding SortDirectionOptions}" SelectedItem="{Binding SelectedSortDirection}"
+                                      HorizontalAlignment="Stretch"/>
+						</StackPanel>
+					</Grid>
+
+					<StackPanel Orientation="Horizontal" Spacing="8">
+						<Button Content="Search" Command="{Binding SearchCommand}" Classes="Primary"/>
+						<Button Content="Clear" Command="{Binding ClearCommand}"/>
+					</StackPanel>
+
+				</StackPanel>
+			</Border>
+
+			<!-- RESULTS -->
+			<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8">
+				<StackPanel>
+
+					<Border Background="#F2F2F2" Padding="15">
+						<Grid ColumnDefinitions="55,100,150,100,*,105,105,105,85">
+							<TextBlock Grid.Column="0" Text="#" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="1" Text="Student No." FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="2" Text="Student" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="3" Text="Code" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="4" Text="Equipment" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="5" Text="Checkout" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="6" Text="Due" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="7" Text="Returned" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="8" Text="Status" FontWeight="Bold" Foreground="Black"/>
+						</Grid>
+					</Border>
+
+					<!-- LOADING / ERROR / NO MATCHES -->
+					<StackPanel Orientation="Horizontal" Spacing="10" Margin="15"
+                                IsVisible="{Binding ResultState.IsLoading}">
+						<ProgressBar IsIndeterminate="True" Width="160"/>
+						<TextBlock Text="Searching..."/>
+					</StackPanel>
+
+					<Border Classes="Feedback Error" Margin="15" IsVisible="{Binding ResultState.HasError}">
+						<StackPanel Spacing="8">
+							<TextBlock Text="{Binding ResultState.ErrorMessage}"/>
+							<Button Content="Retry" Command="{Binding SearchCommand}"/>
+						</StackPanel>
+					</Border>
+
+					<TextBlock Classes="EmptyState" Margin="15"
+                               Text="{Binding ResultState.EmptyMessage}"
+                               IsVisible="{Binding ResultState.IsEmpty}"/>
+
+					<ListBox ItemsSource="{Binding Results}"
+                             SelectedItem="{Binding SelectedRecord}"
+                             BorderThickness="0"
+                             MaxHeight="380">
+						<ListBox.ItemTemplate>
+							<DataTemplate x:DataType="models:BorrowingRecord">
+								<Grid ColumnDefinitions="55,100,150,100,*,105,105,105,85" Margin="5,4">
+									<TextBlock Grid.Column="0" Text="{Binding BorrowingId}"/>
+									<TextBlock Grid.Column="1" Text="{Binding StudentNumber}"/>
+									<TextBlock Grid.Column="2" Text="{Binding StudentName}" TextTrimming="CharacterEllipsis"/>
+									<TextBlock Grid.Column="3" Text="{Binding EquipmentCode}"/>
+									<TextBlock Grid.Column="4" Text="{Binding EquipmentName}" TextTrimming="CharacterEllipsis"/>
+									<TextBlock Grid.Column="5" Text="{Binding DateBorrowedText}"/>
+									<TextBlock Grid.Column="6" Text="{Binding ExpectedReturnDateText}"/>
+									<TextBlock Grid.Column="7" Text="{Binding ReturnedAtText}"/>
+									<TextBlock Grid.Column="8" Text="{Binding StatusText}" FontWeight="SemiBold"/>
+								</Grid>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+
+				</StackPanel>
+			</Border>
+
+			<TextBlock Text="{Binding ResultCountText}" Opacity="0.75"/>
+
+			<Button Content="Return Selected Borrowing" Command="{Binding ReturnSelectedCommand}"/>
+
+			<!-- RESULT MESSAGE -->
+			<Border Classes="Feedback"
+                    Classes.Success="{Binding IsStatusSuccess}"
+                    Classes.Rejected="{Binding IsStatusRejected}"
+                    Classes.Error="{Binding IsStatusError}"
+                    IsVisible="{Binding HasStatus}">
+				<TextBlock Text="{Binding StatusMessage}"/>
+			</Border>
+
+		</StackPanel>
+
+	</ScrollViewer>
+
+</UserControl>

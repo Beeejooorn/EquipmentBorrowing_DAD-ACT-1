@@ -29,6 +29,8 @@
                         Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
+				<Button Content="Search Borrowings" Command="{Binding ShowBorrowingSearchCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Students" Command="{Binding ShowStudentsCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Manage Equipment" Command="{Binding ShowEquipmentManagementCommand}"

@@ -8,6 +8,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly EquipmentViewModel _equipmentViewModel;
     private readonly CheckoutViewModel _checkoutViewModel;
     private readonly BorrowingsViewModel _borrowingsViewModel;
+    private readonly BorrowingSearchViewModel _borrowingSearchViewModel;
     private readonly StudentsViewModel _studentsViewModel;
     private readonly EquipmentManagementViewModel _equipmentManagementViewModel;
 
@@ -28,12 +29,14 @@ public partial class MainViewModel : ViewModelBase
         EquipmentViewModel equipmentViewModel,
         CheckoutViewModel checkoutViewModel,
         BorrowingsViewModel borrowingsViewModel,
+        BorrowingSearchViewModel borrowingSearchViewModel,
         StudentsViewModel studentsViewModel,
         EquipmentManagementViewModel equipmentManagementViewModel)
     {
         _equipmentViewModel = equipmentViewModel;
         _checkoutViewModel = checkoutViewModel;
         _borrowingsViewModel = borrowingsViewModel;
+        _borrowingSearchViewModel = borrowingSearchViewModel;
         _studentsViewModel = studentsViewModel;
         _equipmentManagementViewModel = equipmentManagementViewModel;
 
@@ -63,6 +66,13 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentViewModel = _borrowingsViewModel;
         _ = _borrowingsViewModel.LoadAsync();
+    }
+
+    [RelayCommand]
+    private void ShowBorrowingSearch()
+    {
+        CurrentViewModel = _borrowingSearchViewModel;
+        _ = _borrowingSearchViewModel.SearchAsync();
     }
 
     [RelayCommand]
