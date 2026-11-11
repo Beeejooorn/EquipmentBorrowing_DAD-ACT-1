@@ -59,8 +59,9 @@ public class DatabaseErrorClassifier : IDatabaseErrorClassifier
             return DatabaseErrorKind.DuplicateValue;
         }
 
-        // 23503 = foreign key violation.
-        if (code == "23503")
+        // 23503 = foreign key violation, 23001 = restrict violation
+        // (for example deleting a student that still has borrowings).
+        if (code == "23503" || code == "23001")
         {
             return DatabaseErrorKind.InvalidReference;
         }
