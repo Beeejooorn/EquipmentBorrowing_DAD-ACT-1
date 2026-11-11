@@ -9,15 +9,30 @@ using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Domain;
 
 // Students screen:
-// UC-12 Register Student, UC-13 Update Student Details, UC-14 Change Student Eligibility.
+// UC-12 Register Student, UC-13 Update Student Details, UC-14 Change Student Eligibility,
+// UC-07 View Student Borrowing History.
 public partial class StudentsViewModel : ViewModelBase
 {
     private readonly StudentQueryService _studentQueryService;
     private readonly StudentManagementService _studentManagementService;
+    private readonly BorrowingQueryService _borrowingQueryService;
+
+    // Every history request gets a number. If the user selects another student
+    // before an older request finishes, the older answer is ignored.
+    private int _historyRequestNumber = 0;
 
     public ObservableCollection<Student> StudentList { get; } = new();
 
     public LoadState ListState { get; } = new();
+
+    // ---- Borrowing history of the selected student (UC-07) ----
+
+    public ObservableCollection<BorrowingRecord> HistoryList { get; } = new();
+
+    public LoadState HistoryState { get; } = new();
+
+    [ObservableProperty]
+    private string historyTitle = "Select a student to see their borrowing history.";
 
     // ---- Finding a student ----
 
@@ -51,10 +66,12 @@ public partial class StudentsViewModel : ViewModelBase
 
     public StudentsViewModel(
         StudentQueryService studentQueryService,
-        StudentManagementService studentManagementService)
+        StudentManagementService studentManagementService,
+        BorrowingQueryService borrowingQueryService)
     {
         _studentQueryService = studentQueryService;
         _studentManagementService = studentManagementService;
+        _borrowingQueryService = borrowingQueryService;
     }
 
     // Runs automatically when the user selects another student in the list.
@@ -66,6 +83,12 @@ public partial class StudentsViewModel : ViewModelBase
             HasSelectedStudent = false;
             IsSelectedStudentEligible = false;
             SelectedStudentTitle = "No student selected";
+
+            // The history of the previous student must not stay on screen.
+            _historyRequestNumber++;
+            HistoryList.Clear();
+            HistoryState.Clear();
+            HistoryTitle = "Select a student to see their borrowing history.";
             return;
         }
 
@@ -76,6 +99,58 @@ public partial class StudentsViewModel : ViewModelBase
         HasSelectedStudent = true;
         IsSelectedStudentEligible = value.IsAllowedToBorrow;
         SelectedStudentTitle = $"{value.StudentNumber} - {value.Name}";
+
+        _ = LoadHistoryAsync(value);
+    }
+
+    // UC-07: loads the active and returned borrowings of one student.
+    private async Task LoadHistoryAsync(Student student)
+    {
+        _historyRequestNumber++;
+        int myRequestNumber = _historyRequestNumber;
+
+        HistoryTitle = $"Borrowing history of {student.Name} ({student.StudentNumber})";
+        HistoryList.Clear();
+        HistoryState.StartLoading();
+
+        QueryResult<BorrowingRecord> result = await _borrowingQueryService.GetStudentHistoryAsync(student.Id);
+
+        // 1a. The user selected another student while we were waiting: ignore this old answer.
+        if (myRequestNumber != _historyRequestNumber)
+        {
+            return;
+        }
+
+        if (result.IsNotFound)
+        {
+            HistoryState.ShowNotFound(result.ErrorMessage ?? "This student no longer exists.");
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            HistoryState.ShowError(result.ErrorMessage ?? "Could not load the borrowing history.");
+            return;
+        }
+
+        foreach (BorrowingRecord record in result.Items)
+        {
+            HistoryList.Add(record);
+        }
+
+        HistoryState.ShowLoaded(HistoryList.Count, $"{student.Name} has no borrowing history yet.");
+    }
+
+    [RelayCommand]
+    private async Task RefreshHistoryAsync()
+    {
+        if (SelectedStudent is null)
+        {
+            ShowRejected("Select a student first.");
+            return;
+        }
+
+        await LoadHistoryAsync(SelectedStudent);
     }
 
     [RelayCommand]

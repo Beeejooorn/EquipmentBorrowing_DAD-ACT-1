@@ -8,15 +8,30 @@ using EquipmentBorrowing.Application.Models;
 using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Domain;
 
-// Manage Equipment screen: UC-15 Register Equipment, UC-16 Update Equipment Details.
+// Manage Equipment screen: UC-15 Register Equipment, UC-16 Update Equipment Details,
+// UC-08 View Equipment Borrowing History.
 public partial class EquipmentManagementViewModel : ViewModelBase
 {
     private readonly EquipmentQueryService _equipmentQueryService;
     private readonly EquipmentManagementService _equipmentManagementService;
+    private readonly BorrowingQueryService _borrowingQueryService;
+
+    // Every history request gets a number. If the user selects another item
+    // before an older request finishes, the older answer is ignored.
+    private int _historyRequestNumber = 0;
 
     public ObservableCollection<Equipment> EquipmentList { get; } = new();
 
     public LoadState ListState { get; } = new();
+
+    // ---- Borrowing history of the selected item (UC-08) ----
+
+    public ObservableCollection<BorrowingRecord> HistoryList { get; } = new();
+
+    public LoadState HistoryState { get; } = new();
+
+    [ObservableProperty]
+    private string historyTitle = "Select an item to see its borrowing history.";
 
     // ---- Finding an item ----
 
@@ -50,10 +65,12 @@ public partial class EquipmentManagementViewModel : ViewModelBase
 
     public EquipmentManagementViewModel(
         EquipmentQueryService equipmentQueryService,
-        EquipmentManagementService equipmentManagementService)
+        EquipmentManagementService equipmentManagementService,
+        BorrowingQueryService borrowingQueryService)
     {
         _equipmentQueryService = equipmentQueryService;
         _equipmentManagementService = equipmentManagementService;
+        _borrowingQueryService = borrowingQueryService;
     }
 
     // Runs automatically when the user selects another item in the list.
@@ -65,6 +82,12 @@ public partial class EquipmentManagementViewModel : ViewModelBase
             HasSelectedEquipment = false;
             IsSelectedEquipmentAvailable = false;
             SelectedEquipmentTitle = "No equipment selected";
+
+            // The history of the previous item must not stay on screen.
+            _historyRequestNumber++;
+            HistoryList.Clear();
+            HistoryState.Clear();
+            HistoryTitle = "Select an item to see its borrowing history.";
             return;
         }
 
@@ -75,6 +98,58 @@ public partial class EquipmentManagementViewModel : ViewModelBase
         HasSelectedEquipment = true;
         IsSelectedEquipmentAvailable = value.IsAvailable;
         SelectedEquipmentTitle = $"{value.EquipmentCode} - {value.Name}";
+
+        _ = LoadHistoryAsync(value);
+    }
+
+    // UC-08: loads the active and returned borrowings of one item.
+    private async Task LoadHistoryAsync(Equipment equipment)
+    {
+        _historyRequestNumber++;
+        int myRequestNumber = _historyRequestNumber;
+
+        HistoryTitle = $"Borrowing history of {equipment.Name} ({equipment.EquipmentCode})";
+        HistoryList.Clear();
+        HistoryState.StartLoading();
+
+        QueryResult<BorrowingRecord> result = await _borrowingQueryService.GetEquipmentHistoryAsync(equipment.Id);
+
+        // 1a. The user selected another item while we were waiting: ignore this old answer.
+        if (myRequestNumber != _historyRequestNumber)
+        {
+            return;
+        }
+
+        if (result.IsNotFound)
+        {
+            HistoryState.ShowNotFound(result.ErrorMessage ?? "This equipment no longer exists.");
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            HistoryState.ShowError(result.ErrorMessage ?? "Could not load the borrowing history.");
+            return;
+        }
+
+        foreach (BorrowingRecord record in result.Items)
+        {
+            HistoryList.Add(record);
+        }
+
+        HistoryState.ShowLoaded(HistoryList.Count, $"{equipment.Name} has never been borrowed.");
+    }
+
+    [RelayCommand]
+    private async Task RefreshHistoryAsync()
+    {
+        if (SelectedEquipment is null)
+        {
+            ShowRejected("Select an item first.");
+            return;
+        }
+
+        await LoadHistoryAsync(SelectedEquipment);
     }
 
     [RelayCommand]

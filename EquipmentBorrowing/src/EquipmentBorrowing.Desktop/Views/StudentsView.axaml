@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
              xmlns:domain="using:EquipmentBorrowing.Domain"
+             xmlns:models="using:EquipmentBorrowing.Application.Models"
              x:Class="EquipmentBorrowing.Desktop.Views.StudentsView"
              x:DataType="vm:StudentsViewModel">
 
@@ -12,7 +13,7 @@
 			<!-- PAGE TITLE -->
 			<StackPanel Spacing="4">
 				<TextBlock Text="Students" FontSize="26" FontWeight="Bold"/>
-				<TextBlock Text="Register students, edit their details and permit or restrict borrowing."
+				<TextBlock Text="Register students, edit their details, permit or restrict borrowing, and view their borrowing history."
                            FontSize="14" Opacity="0.65"/>
 			</StackPanel>
 
@@ -134,6 +135,67 @@
 				</StackPanel>
 
 			</Grid>
+
+			<!-- BORROWING HISTORY OF THE SELECTED STUDENT (UC-07) -->
+			<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+				<StackPanel Spacing="10">
+
+					<Grid ColumnDefinitions="*,Auto">
+						<TextBlock Grid.Column="0" Text="{Binding HistoryTitle}" Classes="SectionTitle" VerticalAlignment="Center"/>
+						<Button Grid.Column="1" Content="Refresh History" Command="{Binding RefreshHistoryCommand}"/>
+					</Grid>
+
+					<Border Background="#F2F2F2" Padding="10,6">
+						<Grid ColumnDefinitions="60,110,*,110,110,110,90">
+							<TextBlock Grid.Column="0" Text="#" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="1" Text="Code" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="2" Text="Equipment" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="3" Text="Checkout" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="4" Text="Due" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="5" Text="Returned" FontWeight="Bold" Foreground="Black"/>
+							<TextBlock Grid.Column="6" Text="Status" FontWeight="Bold" Foreground="Black"/>
+						</Grid>
+					</Border>
+
+					<!-- LOADING / ERROR / NOT FOUND / EMPTY -->
+					<StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HistoryState.IsLoading}">
+						<ProgressBar IsIndeterminate="True" Width="160"/>
+						<TextBlock Text="Loading history..."/>
+					</StackPanel>
+
+					<Border Classes="Feedback Error" IsVisible="{Binding HistoryState.HasError}">
+						<StackPanel Spacing="8">
+							<TextBlock Text="{Binding HistoryState.ErrorMessage}"/>
+							<Button Content="Retry" Command="{Binding RefreshHistoryCommand}"/>
+						</StackPanel>
+					</Border>
+
+					<Border Classes="Feedback Rejected" IsVisible="{Binding HistoryState.IsNotFound}">
+						<TextBlock Text="{Binding HistoryState.NotFoundMessage}"/>
+					</Border>
+
+					<TextBlock Classes="EmptyState"
+                               Text="{Binding HistoryState.EmptyMessage}"
+                               IsVisible="{Binding HistoryState.IsEmpty}"/>
+
+					<ItemsControl ItemsSource="{Binding HistoryList}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="models:BorrowingRecord">
+								<Grid ColumnDefinitions="60,110,*,110,110,110,90" Margin="10,4">
+									<TextBlock Grid.Column="0" Text="{Binding BorrowingId}"/>
+									<TextBlock Grid.Column="1" Text="{Binding EquipmentCode}"/>
+									<TextBlock Grid.Column="2" Text="{Binding EquipmentName}"/>
+									<TextBlock Grid.Column="3" Text="{Binding DateBorrowedText}"/>
+									<TextBlock Grid.Column="4" Text="{Binding ExpectedReturnDateText}"/>
+									<TextBlock Grid.Column="5" Text="{Binding ReturnedAtText}"/>
+									<TextBlock Grid.Column="6" Text="{Binding StatusText}" FontWeight="SemiBold"/>
+								</Grid>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+				</StackPanel>
+			</Border>
 
 		</StackPanel>
 
