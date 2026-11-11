@@ -1,15 +1,12 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using EquipmentBorrowing.Application.Interfaces;
 using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Desktop.ViewModels;
 using EquipmentBorrowing.Desktop.Views;
+using EquipmentBorrowing.Infrastructure;
 using EquipmentBorrowing.Infrastructure.Persistence;
-using EquipmentBorrowing.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.IO;
 
 namespace EquipmentBorrowing.Desktop;
 
@@ -24,52 +21,82 @@ public partial class App : Avalonia.Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // 1. Read the connection string (from user secrets / environment variable).
+            string? startupError = null;
+            string connectionString = "";
+
+            try
+            {
+                connectionString = DatabaseSettings.GetConnectionString();
+            }
+            catch (InvalidOperationException ex)
+            {
+                startupError = ex.Message;
+            }
+
+            // 2. Register everything in one place (composition root).
             var services = new ServiceCollection();
-            ConfigureServices(services);
+            ConfigureServices(services, connectionString);
             var provider = services.BuildServiceProvider();
 
-            // Create the database / apply pending migrations (seeds on first run only).
-            using (var context = provider.GetRequiredService<EquipmentBorrowingDbContext>())
+            // 3. Apply migrations and seed sample data (only if the database is empty).
+            //    This happens here, in the composition root, never in a View or ViewModel.
+            if (startupError == null)
             {
-                context.Database.Migrate();
+                try
+                {
+                    provider.GetRequiredService<DatabaseInitializer>().Initialize();
+                }
+                catch (Exception ex)
+                {
+                    startupError = "Could not prepare the PostgreSQL database. " +
+                                   "Check that PostgreSQL is running and that the connection settings are correct. " +
+                                   "Details: " + GetInnermostMessage(ex);
+                }
             }
+
+            // 4. Show the window. If the database is not ready, the window still opens
+            //    and shows the problem instead of crashing.
+            MainViewModel mainViewModel = provider.GetRequiredService<MainViewModel>();
+            mainViewModel.StartupErrorMessage = startupError;
 
             desktop.MainWindow = new MainWindow
             {
-                DataContext = provider.GetRequiredService<MainViewModel>(),
+                DataContext = mainViewModel,
             };
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void ConfigureServices(ServiceCollection services)
+    private static void ConfigureServices(ServiceCollection services, string connectionString)
     {
-        var folder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "EquipmentBorrowing");
-        Directory.CreateDirectory(folder);
-        var dbPath = Path.Combine(folder, "equipmentborrowing.db");
+        // Infrastructure: DbContext factory, unit of work factory, error classifier, initializer.
+        InfrastructureServices.AddInfrastructure(services, connectionString);
 
-        services.AddDbContext<EquipmentBorrowingDbContext>(
-            options => options
-                .UseSqlite($"Data Source={dbPath}")
-                .LogTo(message => System.Diagnostics.Debug.WriteLine(message),
-                       Microsoft.Extensions.Logging.LogLevel.Information),
-            ServiceLifetime.Transient);
-
-        services.AddTransient<IEquipmentRepository, EfEquipmentRepository>();
-        services.AddTransient<IStudentRepository, EfStudentRepository>();
-        services.AddTransient<IBorrowingRepository, EfBorrowingRepository>();
-
+        // Application services are stateless, so a new one each time is fine.
         services.AddTransient<BorrowEquipmentService>();
         services.AddTransient<ReturnEquipmentService>();
         services.AddTransient<EquipmentQueryService>();
         services.AddTransient<StudentQueryService>();
         services.AddTransient<BorrowingQueryService>();
 
+        // ViewModels: each one is created once by MainViewModel.
         services.AddTransient<EquipmentViewModel>();
         services.AddTransient<BorrowingsViewModel>();
         services.AddTransient<MainViewModel>();
+    }
+
+    // Shows the most specific error text (it never contains the password).
+    private static string GetInnermostMessage(Exception ex)
+    {
+        Exception current = ex;
+
+        while (current.InnerException != null)
+        {
+            current = current.InnerException;
+        }
+
+        return current.Message;
     }
 }

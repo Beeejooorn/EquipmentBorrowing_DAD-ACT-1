@@ -5,9 +5,12 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using EquipmentBorrowing.Application.Models;
 using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Domain;
 
+// Equipment Catalog screen:
+// UC-01 View Equipment Catalog, UC-02 Find Available Equipment, UC-03 Borrow Equipment.
 public partial class EquipmentViewModel : ViewModelBase
 {
     private readonly EquipmentQueryService _equipmentQueryService;
@@ -16,6 +19,11 @@ public partial class EquipmentViewModel : ViewModelBase
 
     public ObservableCollection<Equipment> EquipmentList { get; } = new();
     public ObservableCollection<Student> Students { get; } = new();
+
+    public LoadState CatalogState { get; } = new();
+
+    [ObservableProperty]
+    private bool showAvailableOnly;
 
     [ObservableProperty]
     private Equipment? selectedEquipment;
@@ -26,9 +34,6 @@ public partial class EquipmentViewModel : ViewModelBase
     [ObservableProperty]
     private DateTimeOffset? expectedReturnDate = DateTimeOffset.Now.AddDays(7);
 
-    [ObservableProperty]
-    private string? statusMessage;
-
     public EquipmentViewModel(
         EquipmentQueryService equipmentQueryService,
         StudentQueryService studentQueryService,
@@ -37,60 +42,116 @@ public partial class EquipmentViewModel : ViewModelBase
         _equipmentQueryService = equipmentQueryService;
         _studentQueryService = studentQueryService;
         _borrowEquipmentService = borrowEquipmentService;
+    }
 
+    // Runs automatically when the "Show available equipment only" box is ticked or unticked.
+    partial void OnShowAvailableOnlyChanged(bool value)
+    {
         _ = LoadAsync();
     }
 
     [RelayCommand]
     public async Task LoadAsync()
     {
-        var equipment = await _equipmentQueryService.GetAllEquipmentAsync();
+        // Remember what was selected so we can select it again after reloading.
+        int? keepEquipmentId = SelectedEquipment?.Id;
+        int? keepStudentId = SelectedStudent?.Id;
+
+        CatalogState.StartLoading();
+
+        // UC-02 uses the "available only" query, UC-01 loads everything.
+        QueryResult<Equipment> equipmentResult;
+
+        if (ShowAvailableOnly)
+        {
+            equipmentResult = await _equipmentQueryService.GetAvailableEquipmentAsync();
+        }
+        else
+        {
+            equipmentResult = await _equipmentQueryService.GetAllEquipmentAsync();
+        }
+
         EquipmentList.Clear();
-        foreach (var item in equipment)
+
+        if (!equipmentResult.IsSuccess)
+        {
+            CatalogState.ShowError(equipmentResult.ErrorMessage ?? "Could not load equipment.");
+            return;
+        }
+
+        foreach (Equipment item in equipmentResult.Items)
         {
             EquipmentList.Add(item);
         }
 
-        var students = await _studentQueryService.GetAllStudentsAsync();
+        if (ShowAvailableOnly)
+        {
+            CatalogState.ShowLoaded(EquipmentList.Count, "No equipment is available right now.");
+        }
+        else
+        {
+            CatalogState.ShowLoaded(EquipmentList.Count, "The equipment catalog is empty.");
+        }
+
+        // Students for the borrow form.
+        QueryResult<Student> studentResult = await _studentQueryService.GetAllStudentsAsync();
         Students.Clear();
-        foreach (var student in students)
+
+        foreach (Student student in studentResult.Items)
         {
             Students.Add(student);
         }
+
+        // Select the same student and item again (they are new objects after reloading).
+        foreach (Equipment item in EquipmentList)
+        {
+            if (item.Id == keepEquipmentId)
+            {
+                SelectedEquipment = item;
+            }
+        }
+
+        foreach (Student student in Students)
+        {
+            if (student.Id == keepStudentId)
+            {
+                SelectedStudent = student;
+            }
+        }
     }
-
-
 
     [RelayCommand]
     private async Task BorrowAsync()
     {
+        // Presentation checks only: is something selected?
+        // The real business rules are checked again by the service.
         if (SelectedStudent is null)
         {
-            StatusMessage = "Please select a student.";
+            ShowRejected("Please select a student.");
             return;
         }
 
         if (SelectedEquipment is null)
         {
-            StatusMessage = "Please select equipment.";
+            ShowRejected("Please select equipment.");
             return;
         }
 
-        if (ExpectedReturnDate is null)
+        DateOnly? returnDate = null;
+
+        if (ExpectedReturnDate != null)
         {
-            StatusMessage = "Please select an expected return date.";
-            return;
+            returnDate = DateOnly.FromDateTime(ExpectedReturnDate.Value.Date);
         }
 
-        var result = await _borrowEquipmentService.BorrowAsync(
+        OperationResult result = await _borrowEquipmentService.BorrowAsync(
             SelectedStudent.Id,
             SelectedEquipment.Id,
-            ExpectedReturnDate.Value.DateTime);
+            returnDate);
 
-        StatusMessage = result.IsSuccess
-            ? $"Borrowed successfully. Return by {result.Borrowing!.ExpectedReturnDate:d}."
-            : result.ErrorMessage;
+        ShowResult(result);
 
+        // Refresh so the screen shows the current availability (also after a rejection or conflict).
         await LoadAsync();
     }
 }

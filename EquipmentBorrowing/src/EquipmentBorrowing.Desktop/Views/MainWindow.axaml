@@ -3,23 +3,35 @@
         xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
         x:Class="EquipmentBorrowing.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
+        Width="1180" Height="780"
+        MinWidth="900" MinHeight="600"
         Title="Campus Equipment Borrowing System">
 
-	<Grid ColumnDefinitions="200,*">
+	<Grid RowDefinitions="Auto,*">
 
-		<StackPanel Grid.Column="0" Spacing="10" Margin="10">
-			<TextBlock Text="Menu" Classes="Heading" />
-			<Button Content="Equipment" Command="{Binding ShowEquipmentCommand}"
-                    Classes="NavButton" HorizontalAlignment="Stretch" />
-			<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
-                    Classes="NavButton" HorizontalAlignment="Stretch" />
-		</StackPanel>
+		<!-- Shown only when the database could not be prepared at startup -->
+		<Border Grid.Row="0" Classes="Feedback Error" Margin="10,10,10,0"
+                IsVisible="{Binding HasStartupError}">
+			<TextBlock Text="{Binding StartupErrorMessage}"/>
+		</Border>
 
-		<ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Margin="10" />
+		<Grid Grid.Row="1" ColumnDefinitions="210,*">
+
+			<StackPanel Grid.Column="0" Spacing="10" Margin="10">
+				<TextBlock Text="Menu" Classes="Heading" />
+				<Button Content="Equipment Catalog" Command="{Binding ShowEquipmentCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
+				<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
+			</StackPanel>
+
+			<ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Margin="10" />
+
+		</Grid>
 
 	</Grid>
 

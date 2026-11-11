@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="EquipmentBorrowing.Desktop.App"
              xmlns:local="using:EquipmentBorrowing.Desktop"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
+             <!-- Light theme on purpose: the screens use light backgrounds with dark text. -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
@@ -23,7 +23,7 @@
 		</Style>
 
 		<Style Selector="Button.Primary">
-			<Setter Property="Padding" Value="14,8" />
+			<Setter Property="Padding" Value="18,9" />
 			<Setter Property="FontWeight" Value="SemiBold" />
 		</Style>
 
@@ -31,6 +31,52 @@
 			<Setter Property="Margin" Value="0,10,0,0" />
 			<Setter Property="Foreground" Value="DarkSlateGray" />
 			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+
+		<!-- Feedback boxes. Blue = information, green = success,
+		     orange = rejected by a rule, red = error / database problem. -->
+		<Style Selector="Border.Feedback">
+			<Setter Property="Padding" Value="12" />
+			<Setter Property="CornerRadius" Value="5" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Background" Value="#EAF1FB" />
+			<Setter Property="BorderBrush" Value="#5B7DB1" />
+		</Style>
+		<Style Selector="Border.Feedback.Success">
+			<Setter Property="Background" Value="#E7F5EA" />
+			<Setter Property="BorderBrush" Value="#2E7D32" />
+		</Style>
+		<Style Selector="Border.Feedback.Rejected">
+			<Setter Property="Background" Value="#FFF4E0" />
+			<Setter Property="BorderBrush" Value="#E08A00" />
+		</Style>
+		<Style Selector="Border.Feedback.Error">
+			<Setter Property="Background" Value="#FDECEC" />
+			<Setter Property="BorderBrush" Value="#C62828" />
+		</Style>
+		<Style Selector="Border.Feedback TextBlock">
+			<Setter Property="Foreground" Value="Black" />
+			<Setter Property="TextWrapping" Value="Wrap" />
+		</Style>
+
+		<!-- "Nothing to show" message, different from an error. -->
+		<Style Selector="TextBlock.EmptyState">
+			<Setter Property="FontStyle" Value="Italic" />
+			<Setter Property="Foreground" Value="#666666" />
+		</Style>
+
+		<Style Selector="TextBlock.Available">
+			<Setter Property="Foreground" Value="#2E7D32" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+		<Style Selector="TextBlock.Unavailable">
+			<Setter Property="Foreground" Value="#C62828" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+		</Style>
+
+		<Style Selector="TextBlock.SectionTitle">
+			<Setter Property="FontSize" Value="18" />
+			<Setter Property="FontWeight" Value="Bold" />
 		</Style>
     </Application.Styles>
 </Application>
