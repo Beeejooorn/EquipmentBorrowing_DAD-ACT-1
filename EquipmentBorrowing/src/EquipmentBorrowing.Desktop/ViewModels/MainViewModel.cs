@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly EquipmentViewModel _equipmentViewModel;
+    private readonly CheckoutViewModel _checkoutViewModel;
     private readonly BorrowingsViewModel _borrowingsViewModel;
     private readonly StudentsViewModel _studentsViewModel;
     private readonly EquipmentManagementViewModel _equipmentManagementViewModel;
@@ -25,11 +26,13 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(
         EquipmentViewModel equipmentViewModel,
+        CheckoutViewModel checkoutViewModel,
         BorrowingsViewModel borrowingsViewModel,
         StudentsViewModel studentsViewModel,
         EquipmentManagementViewModel equipmentManagementViewModel)
     {
         _equipmentViewModel = equipmentViewModel;
+        _checkoutViewModel = checkoutViewModel;
         _borrowingsViewModel = borrowingsViewModel;
         _studentsViewModel = studentsViewModel;
         _equipmentManagementViewModel = equipmentManagementViewModel;
@@ -46,6 +49,13 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentViewModel = _equipmentViewModel;
         _ = _equipmentViewModel.LoadAsync();
+    }
+
+    [RelayCommand]
+    private void ShowCheckout()
+    {
+        CurrentViewModel = _checkoutViewModel;
+        _ = _checkoutViewModel.LoadAsync();
     }
 
     [RelayCommand]

@@ -4,20 +4,24 @@ using EquipmentBorrowing.Application.Interfaces;
 using EquipmentBorrowing.Application.Models;
 using EquipmentBorrowing.Domain;
 
-// UC-03 Borrow Equipment.
+// UC-03 Borrow Equipment and UC-06 Multi-Item Checkout.
+// Both use the same steps (IssueAsync), the checkout just has a few extra input checks.
 public class BorrowEquipmentService
 {
     private const int MaxActiveBorrowings = 3;
 
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
     private readonly IDatabaseErrorClassifier _errorClassifier;
+    private readonly CheckoutFailureSimulator _failureSimulator;
 
     public BorrowEquipmentService(
         IUnitOfWorkFactory unitOfWorkFactory,
-        IDatabaseErrorClassifier errorClassifier)
+        IDatabaseErrorClassifier errorClassifier,
+        CheckoutFailureSimulator failureSimulator)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _errorClassifier = errorClassifier;
+        _failureSimulator = failureSimulator;
     }
 
     // UC-03: one item for one student.
@@ -30,16 +34,52 @@ public class BorrowEquipmentService
         List<int> equipmentIds = new List<int>();
         equipmentIds.Add(equipmentId);
 
-        return IssueAsync(studentId, equipmentIds, expectedReturnDate, cancellationToken);
+        return IssueAsync(studentId, equipmentIds, expectedReturnDate, false, cancellationToken);
+    }
+
+    // UC-06: two or more different items for one student, all saved or none saved (BR-12).
+    public Task<OperationResult> CheckOutMultipleAsync(
+        int studentId,
+        List<int> equipmentIds,
+        DateOnly? expectedReturnDate,
+        CancellationToken cancellationToken = default)
+    {
+        return IssueAsync(studentId, equipmentIds, expectedReturnDate, true, cancellationToken);
     }
 
     private async Task<OperationResult> IssueAsync(
         int studentId,
         List<int> equipmentIds,
         DateOnly? expectedReturnDate,
+        bool isMultiItemCheckout,
         CancellationToken cancellationToken)
     {
         // ---- Step 1: checks that do not need the database ----
+
+        if (isMultiItemCheckout)
+        {
+            if (equipmentIds.Count < 2)
+            {
+                return OperationResult.Rejected(
+                    "A multi-item checkout needs at least two different items. " +
+                    "To borrow a single item, use Borrow Equipment on the Equipment Catalog screen.");
+            }
+
+            // BR-12: duplicates are rejected, never silently removed.
+            List<int> seenIds = new List<int>();
+
+            foreach (int equipmentId in equipmentIds)
+            {
+                if (seenIds.Contains(equipmentId))
+                {
+                    return OperationResult.Rejected(
+                        "The same item was added to the checkout more than once. " +
+                        "Remove the duplicate and try again. Nothing was saved.");
+                }
+
+                seenIds.Add(equipmentId);
+            }
+        }
 
         if (expectedReturnDate is null)
         {
@@ -111,6 +151,8 @@ public class BorrowEquipmentService
 
             // ---- Step 3: write one borrowing per item and mark each item unavailable ----
 
+            int itemsWritten = 0;
+
             foreach (Equipment equipment in itemsToIssue)
             {
                 Borrowing borrowing = new Borrowing(
@@ -125,6 +167,16 @@ public class BorrowEquipmentService
 
                 // Sends the INSERT and UPDATE to PostgreSQL, but they are not permanent yet.
                 await unitOfWork.SaveChangesAsync(cancellationToken);
+                itemsWritten++;
+
+                // TEST SEAM: fail after a real write happened inside the transaction.
+                if (isMultiItemCheckout
+                    && itemsWritten == 1
+                    && _failureSimulator.Mode == SimulatedCheckoutFailure.AfterFirstWrite)
+                {
+                    throw new SimulatedFailureException(
+                        $"Simulated failure after {equipment.Name} was written inside the transaction.");
+                }
             }
 
             // ---- Step 4: commit, everything becomes permanent together ----
@@ -132,9 +184,26 @@ public class BorrowEquipmentService
             commitStarted = true;
             await unitOfWork.CommitAsync(cancellationToken);
 
+            // TEST SEAM: the commit succeeded, but we pretend the answer never arrived.
+            if (isMultiItemCheckout && _failureSimulator.Mode == SimulatedCheckoutFailure.LostCommitAcknowledgement)
+            {
+                throw new SimulatedConnectionLostException("Simulated connection loss after the commit was sent.");
+            }
+
             return OperationResult.Success(
                 $"{BuildItemList(itemsToIssue)} issued to {student.Name}. " +
                 $"Expected return: {expectedReturnDate.Value:yyyy-MM-dd}.");
+        }
+        catch (SimulatedFailureException ex)
+        {
+            // Leaving the "await using" block already rolled the transaction back.
+            return new OperationResult(ResultKind.Failed,
+                $"{ex.Message} The whole transaction was rolled back, so NOTHING was saved (no borrowings, no availability changes).");
+        }
+        catch (SimulatedConnectionLostException)
+        {
+            // Same handling as a real lost connection during commit (BR-18).
+            return DatabaseErrors.ToResult(DatabaseErrorKind.ConnectionFailed, commitStarted);
         }
         catch (Exception ex)
         {

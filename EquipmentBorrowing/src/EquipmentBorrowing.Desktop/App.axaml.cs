@@ -74,6 +74,10 @@ public partial class App : Avalonia.Application
         // Infrastructure: DbContext factory, unit of work factory, error classifier, initializer.
         InfrastructureServices.AddInfrastructure(services, connectionString);
 
+        // Test seam for the atomicity demonstration. One shared instance (singleton),
+        // so the switch on the checkout screen affects the service. OFF by default.
+        services.AddSingleton<CheckoutFailureSimulator>();
+
         // Application services are stateless, so a new one each time is fine.
         services.AddTransient<BorrowEquipmentService>();
         services.AddTransient<ReturnEquipmentService>();
@@ -85,6 +89,7 @@ public partial class App : Avalonia.Application
 
         // ViewModels: each one is created once by MainViewModel.
         services.AddTransient<EquipmentViewModel>();
+        services.AddTransient<CheckoutViewModel>();
         services.AddTransient<BorrowingsViewModel>();
         services.AddTransient<StudentsViewModel>();
         services.AddTransient<EquipmentManagementViewModel>();

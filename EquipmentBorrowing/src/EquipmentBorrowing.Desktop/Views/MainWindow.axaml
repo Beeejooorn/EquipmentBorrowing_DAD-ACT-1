@@ -25,6 +25,8 @@
 				<TextBlock Text="Menu" Classes="Heading" />
 				<Button Content="Equipment Catalog" Command="{Binding ShowEquipmentCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
+				<Button Content="Multi-Item Checkout" Command="{Binding ShowCheckoutCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Students" Command="{Binding ShowStudentsCommand}"

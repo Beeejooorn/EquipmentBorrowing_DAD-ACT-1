@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
+             xmlns:models="using:EquipmentBorrowing.Desktop.Models"
+             xmlns:domain="using:EquipmentBorrowing.Domain"
+             x:Class="EquipmentBorrowing.Desktop.Views.CheckoutView"
+             x:DataType="vm:CheckoutViewModel">
+
+	<ScrollViewer>
+
+		<StackPanel Margin="25" Spacing="15">
+
+			<!-- PAGE TITLE -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Multi-Item Checkout" FontSize="26" FontWeight="Bold"/>
+				<TextBlock Text="Issue two or more different items to one student in a single transaction: all items are saved, or none are."
+                           FontSize="14" Opacity="0.65"/>
+			</StackPanel>
+
+			<!-- LOADING / ERROR -->
+			<StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding FormState.IsLoading}">
+				<ProgressBar IsIndeterminate="True" Width="160"/>
+				<TextBlock Text="Loading students and equipment..."/>
+			</StackPanel>
+
+			<Border Classes="Feedback Error" IsVisible="{Binding FormState.HasError}">
+				<StackPanel Spacing="8">
+					<TextBlock Text="{Binding FormState.ErrorMessage}"/>
+					<Button Content="Retry" Command="{Binding LoadCommand}"/>
+				</StackPanel>
+			</Border>
+
+			<Grid ColumnDefinitions="*,20,*">
+
+				<!-- LEFT: STUDENT, ITEMS, DATE -->
+				<Border Grid.Column="0" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+					<StackPanel Spacing="8">
+
+						<TextBlock Text="1. Student" Classes="SectionTitle"/>
+						<ComboBox ItemsSource="{Binding Students}"
+                                  SelectedItem="{Binding SelectedStudent}"
+                                  HorizontalAlignment="Stretch" MinHeight="38">
+							<ComboBox.ItemTemplate>
+								<DataTemplate x:DataType="domain:Student">
+									<StackPanel Orientation="Horizontal" Spacing="8">
+										<TextBlock Text="{Binding StudentNumber}"/>
+										<TextBlock Text="{Binding Name}"/>
+										<TextBlock Text="(restricted)" Classes="Unavailable" IsVisible="{Binding !IsAllowedToBorrow}"/>
+									</StackPanel>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+						<TextBlock Text="{Binding StudentInfoText}" FontSize="12" Opacity="0.75" TextWrapping="Wrap"/>
+
+						<TextBlock Text="2. Add items" Classes="SectionTitle" Margin="0,10,0,0"/>
+						<Grid ColumnDefinitions="*,Auto">
+							<ComboBox Grid.Column="0"
+                                      ItemsSource="{Binding AllEquipment}"
+                                      SelectedItem="{Binding ItemToAdd}"
+                                      HorizontalAlignment="Stretch" MinHeight="38">
+								<ComboBox.ItemTemplate>
+									<DataTemplate x:DataType="domain:Equipment">
+										<StackPanel Orientation="Horizontal" Spacing="8">
+											<TextBlock Text="{Binding EquipmentCode}"/>
+											<TextBlock Text="{Binding Name}"/>
+											<TextBlock Text="(borrowed)" Classes="Unavailable" IsVisible="{Binding !IsAvailable}"/>
+										</StackPanel>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+							<Button Grid.Column="1" Content="Add to List" Command="{Binding AddItemCommand}" Margin="8,0,0,0"/>
+						</Grid>
+
+						<TextBlock Text="3. Expected return date (same for all items)" Classes="SectionTitle" Margin="0,10,0,0"/>
+						<DatePicker SelectedDate="{Binding ExpectedReturnDate}" HorizontalAlignment="Left" Width="280" MinHeight="38"/>
+
+						<!-- DEMO / TEST OPTIONS (test seam for the atomicity demonstration) -->
+						<Expander Header="Demo / test options (use only with a disposable database)" Margin="0,15,0,0"
+                                  HorizontalAlignment="Stretch">
+							<StackPanel Spacing="8">
+								<TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
+                                           Text="These switches are a controlled test seam for Lab 4 Appendix C (A06). They are OFF by default."/>
+								<CheckBox IsChecked="{Binding SimulateFailureAfterFirstWrite}">
+									<TextBlock TextWrapping="Wrap"
+                                               Text="Simulate a failure AFTER the first item is written inside the transaction (shows that nothing partial is saved)"/>
+								</CheckBox>
+								<CheckBox IsChecked="{Binding SimulateLostCommit}">
+									<TextBlock TextWrapping="Wrap"
+                                               Text="Simulate a lost connection right after COMMIT (shows the 'unknown outcome' message and refresh)"/>
+								</CheckBox>
+							</StackPanel>
+						</Expander>
+
+					</StackPanel>
+				</Border>
+
+				<!-- RIGHT: CHECKOUT LIST -->
+				<Border Grid.Column="2" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+					<StackPanel Spacing="8">
+
+						<TextBlock Text="Checkout list" Classes="SectionTitle"/>
+						<TextBlock Text="{Binding CheckoutSummary}" FontSize="12" Opacity="0.75"/>
+
+						<Border Background="#F2F2F2" Padding="10,6">
+							<Grid ColumnDefinitions="40,110,*,90">
+								<TextBlock Grid.Column="0" Text="#" FontWeight="Bold" Foreground="Black"/>
+								<TextBlock Grid.Column="1" Text="Code" FontWeight="Bold" Foreground="Black"/>
+								<TextBlock Grid.Column="2" Text="Equipment" FontWeight="Bold" Foreground="Black"/>
+								<TextBlock Grid.Column="3" Text="Status" FontWeight="Bold" Foreground="Black"/>
+							</Grid>
+						</Border>
+
+						<ListBox ItemsSource="{Binding CheckoutLines}"
+                                 SelectedItem="{Binding SelectedLine}"
+                                 MinHeight="150" MaxHeight="300">
+							<ListBox.ItemTemplate>
+								<DataTemplate x:DataType="models:CheckoutLine">
+									<Grid ColumnDefinitions="40,110,*,90">
+										<TextBlock Grid.Column="0" Text="{Binding LineNumber}"/>
+										<TextBlock Grid.Column="1" Text="{Binding Code}"/>
+										<TextBlock Grid.Column="2" Text="{Binding Name}"/>
+										<StackPanel Grid.Column="3">
+											<TextBlock Text="Available" Classes="Available" IsVisible="{Binding IsAvailable}"/>
+											<TextBlock Text="Borrowed" Classes="Unavailable" IsVisible="{Binding !IsAvailable}"/>
+										</StackPanel>
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<Button Content="Remove Selected Line" Command="{Binding RemoveSelectedLineCommand}"/>
+							<Button Content="Clear List" Command="{Binding ClearLinesCommand}"/>
+						</StackPanel>
+
+						<Button Content="Check Out All Items" Command="{Binding CheckOutCommand}"
+                                Classes="Primary" Margin="0,10,0,0"/>
+
+						<!-- RESULT MESSAGE -->
+						<Border Classes="Feedback"
+                                Classes.Success="{Binding IsStatusSuccess}"
+                                Classes.Rejected="{Binding IsStatusRejected}"
+                                Classes.Error="{Binding IsStatusError}"
+                                IsVisible="{Binding HasStatus}">
+							<TextBlock Text="{Binding StatusMessage}"/>
+						</Border>
+
+					</StackPanel>
+				</Border>
+
+			</Grid>
+
+		</StackPanel>
+
+	</ScrollViewer>
+
+</UserControl>
