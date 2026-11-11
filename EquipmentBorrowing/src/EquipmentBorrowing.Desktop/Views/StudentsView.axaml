@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EquipmentBorrowing.Desktop.ViewModels"
+             xmlns:domain="using:EquipmentBorrowing.Domain"
+             x:Class="EquipmentBorrowing.Desktop.Views.StudentsView"
+             x:DataType="vm:StudentsViewModel">
+
+	<ScrollViewer>
+
+		<StackPanel Margin="25" Spacing="15">
+
+			<!-- PAGE TITLE -->
+			<StackPanel Spacing="4">
+				<TextBlock Text="Students" FontSize="26" FontWeight="Bold"/>
+				<TextBlock Text="Register students, edit their details and permit or restrict borrowing."
+                           FontSize="14" Opacity="0.65"/>
+			</StackPanel>
+
+			<Grid ColumnDefinitions="*,20,*">
+
+				<!-- LEFT: FIND AND SELECT A STUDENT -->
+				<Border Grid.Column="0" BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+					<StackPanel Spacing="10">
+
+						<TextBlock Text="Find a student" Classes="SectionTitle"/>
+						<TextBlock Text="Search by student number or name (part of it is enough)." FontSize="12" Opacity="0.65"/>
+
+						<Grid ColumnDefinitions="*,Auto,Auto">
+							<TextBox Grid.Column="0" Text="{Binding SearchText}"/>
+							<Button Grid.Column="1" Content="Search" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
+							<Button Grid.Column="2" Content="Show All" Command="{Binding ShowAllCommand}" Margin="8,0,0,0"/>
+						</Grid>
+
+						<!-- LOADING / ERROR / EMPTY -->
+						<StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding ListState.IsLoading}">
+							<ProgressBar IsIndeterminate="True" Width="160"/>
+							<TextBlock Text="Loading students..."/>
+						</StackPanel>
+
+						<Border Classes="Feedback Error" IsVisible="{Binding ListState.HasError}">
+							<StackPanel Spacing="8">
+								<TextBlock Text="{Binding ListState.ErrorMessage}"/>
+								<Button Content="Retry" Command="{Binding LoadCommand}"/>
+							</StackPanel>
+						</Border>
+
+						<TextBlock Classes="EmptyState"
+                                   Text="{Binding ListState.EmptyMessage}"
+                                   IsVisible="{Binding ListState.IsEmpty}"/>
+
+						<!-- STUDENT LIST -->
+						<ListBox ItemsSource="{Binding StudentList}"
+                                 SelectedItem="{Binding SelectedStudent}"
+                                 MaxHeight="420">
+							<ListBox.ItemTemplate>
+								<DataTemplate x:DataType="domain:Student">
+									<Grid ColumnDefinitions="100,*,90" Margin="2">
+										<TextBlock Grid.Column="0" Text="{Binding StudentNumber}"/>
+										<TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+										<StackPanel Grid.Column="2">
+											<TextBlock Text="Eligible" Classes="Available" IsVisible="{Binding IsAllowedToBorrow}"/>
+											<TextBlock Text="Restricted" Classes="Unavailable" IsVisible="{Binding !IsAllowedToBorrow}"/>
+										</StackPanel>
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+					</StackPanel>
+				</Border>
+
+				<!-- RIGHT: FORM AND ELIGIBILITY -->
+				<StackPanel Grid.Column="2" Spacing="15">
+
+					<!-- REGISTER / EDIT (UC-12, UC-13) -->
+					<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+						<StackPanel Spacing="8">
+
+							<TextBlock Text="Student details" Classes="SectionTitle"/>
+							<TextBlock Text="To register: click Clear Form, fill in the fields and click Register. To edit: select a student, change the fields and click Save Changes."
+                                       FontSize="12" Opacity="0.65" TextWrapping="Wrap"/>
+
+							<TextBlock Text="Student number (required)" FontWeight="SemiBold" Margin="0,6,0,0"/>
+							<TextBox Text="{Binding FormStudentNumber}"/>
+
+							<TextBlock Text="Full name (required)" FontWeight="SemiBold"/>
+							<TextBox Text="{Binding FormFullName}"/>
+
+							<TextBlock Text="Contact information (optional)" FontWeight="SemiBold"/>
+							<TextBox Text="{Binding FormContactInfo}"/>
+
+							<WrapPanel Margin="0,8,0,0">
+								<Button Content="Register New Student" Command="{Binding RegisterCommand}" Classes="Primary" Margin="0,0,8,8"/>
+								<Button Content="Save Changes to Selected" Command="{Binding SaveChangesCommand}" Classes="Primary" Margin="0,0,8,8"/>
+								<Button Content="Clear Form" Command="{Binding ClearFormCommand}" Margin="0,0,8,8"/>
+							</WrapPanel>
+
+						</StackPanel>
+					</Border>
+
+					<!-- ELIGIBILITY (UC-14) -->
+					<Border BorderBrush="#DADADA" BorderThickness="1" CornerRadius="8" Padding="15">
+						<StackPanel Spacing="8">
+
+							<TextBlock Text="Borrowing eligibility" Classes="SectionTitle"/>
+							<TextBlock Text="{Binding SelectedStudentTitle}" FontWeight="SemiBold"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasSelectedStudent}">
+								<TextBlock Text="Current status:"/>
+								<TextBlock Text="Eligible to borrow" Classes="Available" IsVisible="{Binding IsSelectedStudentEligible}"/>
+								<TextBlock Text="Restricted" Classes="Unavailable" IsVisible="{Binding !IsSelectedStudentEligible}"/>
+							</StackPanel>
+
+							<TextBlock Text="Restricting only blocks NEW borrowing. Items the student already has stay active and can still be returned."
+                                       FontSize="12" Opacity="0.65" TextWrapping="Wrap"/>
+
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<Button Content="Permit Borrowing" Command="{Binding PermitCommand}"/>
+								<Button Content="Restrict Borrowing" Command="{Binding RestrictCommand}"/>
+							</StackPanel>
+
+						</StackPanel>
+					</Border>
+
+					<!-- RESULT MESSAGE -->
+					<Border Classes="Feedback"
+                            Classes.Success="{Binding IsStatusSuccess}"
+                            Classes.Rejected="{Binding IsStatusRejected}"
+                            Classes.Error="{Binding IsStatusError}"
+                            IsVisible="{Binding HasStatus}">
+						<TextBlock Text="{Binding StatusMessage}"/>
+					</Border>
+
+				</StackPanel>
+
+			</Grid>
+
+		</StackPanel>
+
+	</ScrollViewer>
+
+</UserControl>

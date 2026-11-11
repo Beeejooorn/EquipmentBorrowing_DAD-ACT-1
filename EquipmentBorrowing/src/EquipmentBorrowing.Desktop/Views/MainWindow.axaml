@@ -27,6 +27,8 @@
                         Classes="NavButton" HorizontalAlignment="Stretch" />
 				<Button Content="Active Borrowings" Command="{Binding ShowBorrowingsCommand}"
                         Classes="NavButton" HorizontalAlignment="Stretch" />
+				<Button Content="Students" Command="{Binding ShowStudentsCommand}"
+                        Classes="NavButton" HorizontalAlignment="Stretch" />
 			</StackPanel>
 
 			<ContentControl Grid.Column="1" Content="{Binding CurrentViewModel}" Margin="10" />

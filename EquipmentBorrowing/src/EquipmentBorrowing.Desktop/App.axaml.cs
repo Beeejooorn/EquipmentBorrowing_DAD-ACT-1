@@ -80,10 +80,12 @@ public partial class App : Avalonia.Application
         services.AddTransient<EquipmentQueryService>();
         services.AddTransient<StudentQueryService>();
         services.AddTransient<BorrowingQueryService>();
+        services.AddTransient<StudentManagementService>();
 
         // ViewModels: each one is created once by MainViewModel.
         services.AddTransient<EquipmentViewModel>();
         services.AddTransient<BorrowingsViewModel>();
+        services.AddTransient<StudentsViewModel>();
         services.AddTransient<MainViewModel>();
     }
 
