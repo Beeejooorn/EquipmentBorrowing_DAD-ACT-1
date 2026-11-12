@@ -1,0 +1,106 @@
+﻿Lab 4 helper - step 'test' - 2026-11-11 19:42:11
+
+=== dotnet build
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  EquipmentBorrowing.Domain -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Domain\bin\Debug\net10.0\EquipmentBorrowing.Domain.dll
+  EquipmentBorrowing.Application -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Application\bin\Debug\net10.0\EquipmentBorrowing.Application.dll
+  EquipmentBorrowing.Infrastructure -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Infrastructure\bin\Debug\net10.0\EquipmentBorrowing.Infrastructure.dll
+  EquipmentBorrowing.Tests -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Tests\bin\Debug\net10.0\EquipmentBorrowing.Tests.dll
+  EquipmentBorrowing.Desktop -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Desktop\bin\Debug\net10.0\EquipmentBorrowing.Desktop.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:14.43
+(exit code 0)
+
+=== dotnet test (disposable database: equipmentborrowing_test)
+Test run for C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Tests\bin\Debug\net10.0\EquipmentBorrowing.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.81]   Discovering: EquipmentBorrowing.Tests
+[xUnit.net 00:00:00.86]   Discovered:  EquipmentBorrowing.Tests
+[xUnit.net 00:00:00.90]   Starting:    EquipmentBorrowing.Tests
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsBlankOrMissingRequiredText [4 s]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_AllowsManyReturnedBorrowingsForTheSameItem [446 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsExpectedReturnDateNotAfterCheckout [58 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsDuplicateStudentNumber_IgnoringCaseAndSpaces [51 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsDuplicateEquipmentCode_IgnoringCaseAndSpaces [50 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsReturnedStatusWithoutReturnDate [62 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsSecondActiveBorrowingForTheSameItem [70 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RejectsBorrowingForMissingStudent [52 ms]
+  Passed EquipmentBorrowing.Tests.DatabaseConstraintTests.Database_RefusesToDeleteAStudentThatHasHistory [81 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterEquipment_BlankRequiredFields_IsRejected [53 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterStudent_BlankRequiredFields_IsRejected [99 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RestrictStudent_BlocksNewBorrowingButKeepsActiveBorrowings [194 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateEquipment_MissingItem_ReturnsNotFound [73 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateStudent_KeepingItsOwnNumber_IsAllowed [132 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.ChangeEligibility_ToTheSameStatus_ReturnsNoChange [68 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterEquipment_DuplicateCodeWithDifferentCaseOrSpaces_IsRejected [61 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterEquipment_Valid_SavesAvailableItemWithNullDescription [75 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterStudent_Valid_SavesTrimmedEligibleStudentWithNullContact [64 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.RegisterStudent_DuplicateNumberWithDifferentCaseOrSpaces_IsRejected [55 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateStudent_MissingStudent_ReturnsNotFound [61 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateEquipment_CodeOfAnotherItem_IsRejected [74 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateStudent_ChangesDetailsAndKeepsBorrowingHistory [125 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.PermitStudent_AllowsBorrowingAgain [152 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateEquipment_ChangesDetailsButNeverAvailabilityOrHistory [93 ms]
+  Passed EquipmentBorrowing.Tests.StudentAndEquipmentManagementTests.UpdateStudent_NumberOfAnotherStudent_IsRejected [88 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_RestrictedOrMissingStudent_IsRejected [109 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_FailureAfterFirstWrite_RollsBackEverything [118 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_OverTheLimit_IsRejectedAndSavesNothing [69 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_ExactlyAtTheLimitOfThree_Succeeds [78 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_TwoAvailableItems_SavesOneBorrowingPerItem [128 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_FewerThanTwoItems_IsRejected [83 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.SingleBorrow_IsNotAffectedByTheCheckoutTestSeam [86 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_MissingItem_ReturnsNotFoundAndSavesNothing [91 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_InvalidExpectedDate_IsRejected [83 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_DuplicateItem_IsRejectedNotIgnored [74 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_OneUnavailableItem_RejectsTheWholeCheckout [81 ms]
+  Passed EquipmentBorrowing.Tests.MultiItemCheckoutTests.CheckOut_LostCommitAcknowledgement_ReportsUnknownOutcome [90 ms]
+  Passed EquipmentBorrowing.Tests.ConnectionFailureTests.ErrorMessage_ForConnectionLostDuringCommit_SaysTheOutcomeIsUnknown [1 ms]
+  Passed EquipmentBorrowing.Tests.ConnectionFailureTests.Classifier_TreatsANetworkErrorAsConnectionFailure [< 1 ms]
+  Passed EquipmentBorrowing.Tests.ConnectionFailureTests.LoadingAList_WhenDatabaseIsDown_ReturnsAnErrorResultNotAnException [3 s]
+  Passed EquipmentBorrowing.Tests.ConnectionFailureTests.Saving_WhenDatabaseIsDown_ReportsFailureAndThatNothingWasSaved [3 s]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Return_MissingBorrowing_ReturnsNotFound [73 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_ExpectedDateTodayPastOrMissing_IsRejected [70 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_ValidRequest_SavesActiveBorrowingAndMarksItemUnavailable [98 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Return_ByRestrictedStudent_IsStillAllowed [93 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_RestrictedStudent_IsRejectedAndSavesNothing [88 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Return_ActiveBorrowing_MarksReturnedAndMakesItemAvailable [117 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_MissingStudentOrItem_ReturnsNotFound [71 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_FourthActiveItem_IsRejected [93 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Borrow_UnavailableItem_IsRejected [77 ms]
+  Passed EquipmentBorrowing.Tests.BorrowAndReturnTests.Return_AlreadyReturned_IsRejectedAndChangesNothing [100 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_SortByCheckoutDateDescending_NewestFirst [118 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_NoMatches_IsAnEmptySuccessNotAnError [72 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.StudentHistory_MissingStudent_IsNotFound [69 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.EquipmentHistory_ShowsOnlyThatItemAcrossDifferentStudents [80 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_TextAndStatusCombined_UsesBothCriteria [79 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_SameDates_AreOrderedByBorrowingIdAsTieBreaker [93 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.StudentHistory_StudentWithNoBorrowings_IsEmptyNotAnError [81 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_ByStudentNumber_FindsThatStudent [69 ms]
+[xUnit.net 00:00:17.51]   Finished:    EquipmentBorrowing.Tests
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_SortByExpectedReturnDateAscending_OldestFirst [85 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.StudentHistory_ShowsOnlyThatStudentsActiveAndReturnedRecords [73 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.EquipmentHistory_MissingItem_IsNotFound [66 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_PartialStudentName_IsCaseInsensitiveAndTrimmed [71 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_ByEquipmentName_FindsThatItem [69 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.EquipmentHistory_NeverBorrowedItem_IsEmptyNotAnError [70 ms]
+  Passed EquipmentBorrowing.Tests.HistoryAndSearchTests.Search_StatusFilters_ReturnActiveReturnedOrAll [90 ms]
+
+Test Run Successful.
+Total tests: 66
+     Passed: 66
+ Total time: 18.9431 Seconds
+WARNING: Overwriting results file: C:\Users\Bjorn\Downloads\School Activities\DAD\act-4\test-results\lab4-tests.trx
+Results File: C:\Users\Bjorn\Downloads\School Activities\DAD\act-4\test-results\lab4-tests.trx
+(exit code 0)
+
+=== git status
+ M EquipmentBorrowing/tests/EquipmentBorrowing.Tests/MultiItemCheckoutTests.cs
+(exit code 0)
+
+Finished. Log saved to C:\Users\Bjorn\Downloads\School Activities\DAD\act-4\logs\test.log

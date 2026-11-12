@@ -2,6 +2,7 @@ using EquipmentBorrowing.Application.Models;
 using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Domain;
 using EquipmentBorrowing.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace EquipmentBorrowing.Tests;
 
@@ -141,6 +142,17 @@ public class MultiItemCheckoutTests : DatabaseTestBase
         AssertNothingSaved(5, "EQ-LAP-02", "EQ-PRJ-01");
     }
 
+    // Reads the last number PostgreSQL handed out for Borrowings.Id.
+    // A rolled-back INSERT still uses up a number, so this proves a write really reached the database.
+    private long LastBorrowingIdNumber()
+    {
+        using EquipmentBorrowingDbContext context = FreshContext();
+        return context.Database
+            .SqlQueryRaw<long>("SELECT last_value AS \"Value\" FROM \"Borrowings_Id_seq\"")
+            .AsEnumerable()
+            .Single();
+    }
+
     // The safe atomicity demonstration (test seam):
     // the first borrowing IS written to PostgreSQL inside the transaction, then a failure happens.
     // A fresh read must show that nothing at all was saved.
@@ -150,11 +162,17 @@ public class MultiItemCheckoutTests : DatabaseTestBase
         FailureSimulator.Mode = SimulatedCheckoutFailure.AfterFirstWrite;
         int dan = StudentId("2023-0004");
         int before = CountBorrowings();
+        long idNumberBefore = LastBorrowingIdNumber();
 
         OperationResult result = await BorrowService.CheckOutMultipleAsync(dan, Items("EQ-LAP-02", "EQ-PRJ-01"), Today.AddDays(7));
 
         Assert.Equal(ResultKind.Failed, result.Kind);
         Assert.Contains("rolled back", result.Message);
+
+        // At least one INSERT was sent to PostgreSQL before the failure...
+        Assert.True(LastBorrowingIdNumber() > idNumberBefore);
+
+        // ...but after the rollback nothing is left.
         Assert.Equal(0, CountActiveBorrowings(dan));
         AssertNothingSaved(before, "EQ-LAP-02", "EQ-PRJ-01");
     }

@@ -1,0 +1,81 @@
+﻿Lab 4 helper - step 'app' - 2026-11-11 21:29:57
+
+=== dotnet build
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  EquipmentBorrowing.Domain -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Domain\bin\Debug\net10.0\EquipmentBorrowing.Domain.dll
+  EquipmentBorrowing.Application -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Application\bin\Debug\net10.0\EquipmentBorrowing.Application.dll
+  EquipmentBorrowing.Infrastructure -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Infrastructure\bin\Debug\net10.0\EquipmentBorrowing.Infrastructure.dll
+  EquipmentBorrowing.Tests -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Tests\bin\Debug\net10.0\EquipmentBorrowing.Tests.dll
+  EquipmentBorrowing.Desktop -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Desktop\bin\Debug\net10.0\EquipmentBorrowing.Desktop.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.37
+(exit code 0)
+
+=== Starting the app. Try it, then CLOSE the app window to continue this script.
+
+=== dotnet run (Desktop app output)
+(exit code 0)
+
+=== Students after closing the app
+ Id | StudentNumber |      Name       |     ContactInfo      | IsAllowedToBorrow 
+----+---------------+-----------------+----------------------+-------------------
+  1 | 2023-0001     | Ana Reyes       | ana.reyes@campus.edu | t
+  2 | 2023-0002     | Ben Cruz        | 0917-555-0102        | t
+  3 | 2023-0003     | Carla Santos    |                      | f
+  4 | 2023-0004     | Dan Lim         | dan.lim@campus.edu   | t
+  5 | 2023-005      | Eve Garcia      |                      | t
+  6 | 2023-0100     | Lab Four Tester |                      | t
+(6 rows)
+
+(exit code 0)
+
+=== Equipment after closing the app
+ Id | EquipmentCode |      Name      |         Description          | IsAvailable 
+----+---------------+----------------+------------------------------+-------------
+  1 | EQ-LAP-01     | Laptop 01      | Dell Latitude 5440 (14 inch) | f
+  2 | EQ-LAP-02     | Laptop 02      | Dell Latitude 5440           | f
+  3 | EQ-PRJ-01     | Projector 01   | Epson EB-X51                 | f
+  4 | EQ-CAM-01     | Camera 01      | Canon EOS M50                | f
+  5 | EQ-TAB-01     | Tablet 01      | iPad 10th gen                | f
+  6 | EQ-MIC-01     | Microphone 01  |                              | f
+  7 | EQ-SPK-01     | Speaker 01     |                              | f
+  8 | EQ-TRI-01     | Tripod 01      | Sony ZV-E10                  | t
+  9 | EQ-CAM-02     | Camera 02 Sony |                              | f
+(9 rows)
+
+(exit code 0)
+
+=== Borrowings after closing the app (joined with their student and equipment)
+ Id | StudentNumber |     Student     | EquipmentCode |   Equipment    | DateBorrowed | ExpectedReturnDate |  Status  | ReturnedAt 
+----+---------------+-----------------+---------------+----------------+--------------+--------------------+----------+------------
+  1 | 2023-0001     | Ana Reyes       | EQ-LAP-01     | Laptop 01      | 2026-10-22   | 2026-10-29         | Returned | 2026-10-27
+  2 | 2023-0001     | Ana Reyes       | EQ-CAM-01     | Camera 01      | 2026-11-08   | 2026-11-15         | Active   | 
+  3 | 2023-0002     | Ben Cruz        | EQ-PRJ-01     | Projector 01   | 2026-10-30   | 2026-11-06         | Returned | 2026-11-05
+  4 | 2023-0002     | Ben Cruz        | EQ-LAP-01     | Laptop 01      | 2026-11-09   | 2026-11-16         | Active   | 
+  5 | 2023-0003     | Carla Santos    | EQ-TAB-01     | Tablet 01      | 2026-10-12   | 2026-10-19         | Returned | 2026-10-18
+  7 | 2023-0001     | Ana Reyes       | EQ-LAP-02     | Laptop 02      | 2026-11-11   | 2026-11-18         | Active   | 
+  8 | 2023-0001     | Ana Reyes       | EQ-PRJ-01     | Projector 01   | 2026-11-11   | 2026-11-18         | Active   | 
+  9 | 2023-0004     | Dan Lim         | EQ-TAB-01     | Tablet 01      | 2026-11-11   | 2026-11-18         | Active   | 
+ 10 | 2023-0004     | Dan Lim         | EQ-MIC-01     | Microphone 01  | 2026-11-11   | 2026-11-18         | Active   | 
+ 11 | 2023-0100     | Lab Four Tester | EQ-CAM-02     | Camera 02 Sony | 2026-11-11   | 2026-11-18         | Returned | 2026-11-11
+ 12 | 2023-0100     | Lab Four Tester | EQ-CAM-02     | Camera 02 Sony | 2026-11-11   | 2026-11-18         | Active   | 
+ 13 | 2023-0100     | Lab Four Tester | EQ-SPK-01     | Speaker 01     | 2026-11-11   | 2026-11-18         | Active   | 
+(12 rows)
+
+(exit code 0)
+
+=== Drop disposable database equipmentborrowing_empty (if it exists)
+psql:C:/Users/Bjorn/AppData/Local/Temp/lab4-query.sql:1: NOTICE:  database "equipmentborrowing_empty" does not exist, skipping
+DROP DATABASE
+(exit code 0)
+
+=== git status
+ M EquipmentBorrowing/tests/EquipmentBorrowing.Tests/MultiItemCheckoutTests.cs
+(exit code 0)
+
+Finished. Log saved to C:\Users\Bjorn\Downloads\School Activities\DAD\act-4\logs\app-20261111-212957.log

@@ -1,0 +1,54 @@
+﻿Lab 4 helper - step 'empty' - 2026-11-11 20:03:06
+
+=== dotnet build
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  EquipmentBorrowing.Domain -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Domain\bin\Debug\net10.0\EquipmentBorrowing.Domain.dll
+  EquipmentBorrowing.Application -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Application\bin\Debug\net10.0\EquipmentBorrowing.Application.dll
+  EquipmentBorrowing.Infrastructure -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Infrastructure\bin\Debug\net10.0\EquipmentBorrowing.Infrastructure.dll
+  EquipmentBorrowing.Desktop -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\src\EquipmentBorrowing.Desktop\bin\Debug\net10.0\EquipmentBorrowing.Desktop.dll
+  EquipmentBorrowing.Tests -> C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Tests\bin\Debug\net10.0\EquipmentBorrowing.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.81
+(exit code 0)
+
+=== Drop disposable database equipmentborrowing_empty (if it exists)
+psql:C:/Users/Bjorn/AppData/Local/Temp/lab4-query.sql:1: NOTICE:  database "equipmentborrowing_empty" does not exist, skipping
+DROP DATABASE
+(exit code 0)
+
+=== dotnet ef database update  (target: clean database equipmentborrowing_empty)
+Build started...
+Build succeeded.
+An error occurred using the connection to database 'equipmentborrowing_empty' on server 'tcp://localhost:5432'.
+Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+Applying migration '20261111045753_InitialPostgreSqlSchema'.
+Done.
+(exit code 0)
+
+=== Add one student only
+INSERT 0 1
+ students 
+----------
+        1
+(1 row)
+
+ equipment 
+-----------
+         0
+(1 row)
+
+ borrowings 
+------------
+          0
+(1 row)
+
+(exit code 0)
+
+=== Starting the app on the EMPTY disposable database. Take the screenshots, then CLOSE the app.
+
+=== dotnet run (Desktop app output, empty database)
