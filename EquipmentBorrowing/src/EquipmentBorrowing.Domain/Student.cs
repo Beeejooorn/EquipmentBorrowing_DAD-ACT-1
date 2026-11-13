@@ -40,3 +40,10 @@ public class Student
         this.IsAllowedToBorrow = isAllowedToBorrow;
     }
 }
+
+
+// Name: Hervy Bjorn C. Tanamal
+// Student ID: 2022302797
+
+// Name: Steven Andujar Malnegro
+// Student ID: 2022301783s
