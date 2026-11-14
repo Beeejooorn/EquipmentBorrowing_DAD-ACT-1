@@ -19,3 +19,8 @@
 | API build | `dotnet build EquipmentBorrowing/src/EquipmentBorrowing.Api/EquipmentBorrowing.Api.csproj` succeeded. | User-provided PowerShell output (text) |
 | API independent startup | API reported `Now listening on: http://localhost:5085` and `Application started` with desktop closed. | `setup-06-api-running-independently.png` |
 | API HTTP response | Browser received `{ "message": "Equipment Borrowing API is running." }` from `http://localhost:5085/`. | `setup-07-api-root-response.png` |
+| API-01 build | Updated API with `GET /api/v1/equipment` built successfully. | User-provided PowerShell output (text) |
+| API-01 empty list | `GET /api/v1/equipment` returned `[]` against the empty Activity 5 database. | `api01-03-empty-equipment-list.png` |
+| API-01 invalid filter body | `available=maybe` returned `{ "code": "invalid_query", "message": "available must be true or false." }`; HTTP status still to verify. | `api01-04-invalid-filter-body.png` |
+| API-01 invalid filter status | `GET /api/v1/equipment?available=maybe` returned HTTP 400 and the expected JSON error body. | `api01-05-invalid-filter-http-400.png` |
+| API-01 empty-list status | `GET /api/v1/equipment` returned HTTP 200 with `[]`. | `api01-06-empty-list-http-200.png` |
