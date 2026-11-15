@@ -582,6 +582,116 @@ app.MapPost("/api/v1/borrowings", async (
     });
 });
 
+app.MapPost("/api/v1/checkout-requests", async (
+    CheckoutRequest request,
+    BorrowEquipmentService borrowingService,
+    BorrowingQueryService borrowingQueryService,
+    CancellationToken cancellationToken) =>
+{
+    if (request.StudentId <= 0 || request.EquipmentIds is null || request.ExpectedReturnDate is null)
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_checkout",
+            message = "A student, at least two equipment items, and an expected return date are required."
+        });
+    }
+
+    if (request.EquipmentIds.Count < 2)
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_checkout",
+            message = "A multi-item checkout requires at least two equipment items."
+        });
+    }
+
+    if (request.EquipmentIds.Distinct().Count() != request.EquipmentIds.Count)
+    {
+        return Results.BadRequest(new
+        {
+            code = "duplicate_equipment_id",
+            message = "Each equipment item may appear only once in a checkout."
+        });
+    }
+
+    OperationResult result = await borrowingService.CheckOutMultipleAsync(
+        request.StudentId,
+        request.EquipmentIds,
+        request.ExpectedReturnDate,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new { code = "not_found", message = result.Message });
+    }
+
+    if (result.Kind is ResultKind.Rejected or ResultKind.Conflict)
+    {
+        bool conflict = result.Kind == ResultKind.Conflict
+            || result.Message.Contains("restricted", StringComparison.OrdinalIgnoreCase)
+            || result.Message.Contains("over the limit", StringComparison.OrdinalIgnoreCase)
+            || result.Message.Contains("not available", StringComparison.OrdinalIgnoreCase);
+
+        return Results.Json(
+            new { code = conflict ? "checkout_conflict" : "invalid_checkout", message = result.Message },
+            statusCode: conflict ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new { code = "unknown_outcome", message = "The save outcome is unknown. Check the borrowing list before retrying." },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not check out the equipment." },
+            statusCode: 500);
+    }
+
+    var readback = await borrowingQueryService.GetStudentHistoryAsync(
+        request.StudentId,
+        cancellationToken);
+
+    if (!readback.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "readback_failed", message = "The checkout may have saved, but its borrowings could not be reloaded. Check the borrowing list before retrying." },
+            statusCode: 500);
+    }
+
+    DateOnly checkoutDate = DateOnly.FromDateTime(DateTime.Now);
+    var borrowings = readback.Items
+        .Where(borrowing => request.EquipmentIds.Contains(borrowing.EquipmentId)
+            && borrowing.DateBorrowed == checkoutDate
+            && borrowing.ExpectedReturnDate == request.ExpectedReturnDate.Value
+            && borrowing.Status == BorrowingStatus.Active)
+        .OrderBy(borrowing => request.EquipmentIds.IndexOf(borrowing.EquipmentId))
+        .Select(borrowing => new
+        {
+            id = borrowing.BorrowingId,
+            studentId = borrowing.StudentId,
+            equipmentId = borrowing.EquipmentId,
+            dateBorrowed = borrowing.DateBorrowed,
+            expectedReturnDate = borrowing.ExpectedReturnDate,
+            status = borrowing.Status.ToString(),
+            returnedAt = borrowing.ReturnedAt
+        })
+        .ToList();
+
+    if (borrowings.Count != request.EquipmentIds.Count)
+    {
+        return Results.Json(
+            new { code = "readback_failed", message = "The checkout saved, but not all borrowings could be confirmed. Check the borrowing list before retrying." },
+            statusCode: 500);
+    }
+
+    return Results.Created("/api/v1/borrowings", new { borrowings });
+});
+
 app.Run();
 
 
@@ -604,4 +714,9 @@ record CreateEquipmentRequest(
 record BorrowEquipmentRequest(
     int StudentId,
     int EquipmentId,
+    DateOnly? ExpectedReturnDate);
+
+record CheckoutRequest(
+    int StudentId,
+    List<int>? EquipmentIds,
     DateOnly? ExpectedReturnDate);
