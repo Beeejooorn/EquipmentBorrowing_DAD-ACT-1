@@ -66,3 +66,12 @@
 | API-09 missing equipment | PUT unknown equipment ID returned HTTP 404 with `not_found`. | `api09-10-missing-equipment-http-404.png` |
 | API-09 blank name | PUT equipment ID 1 with blank name returned HTTP 400 and `invalid_equipment`. | `api09-11-blank-name-http-400.png` |
 | API-09 duplicate code | PUT equipment ID 1 using ID 2's code returned HTTP 409 and `duplicate_equipment_code`. PostgreSQL still had the original codes and exactly two rows. | `api09-12-duplicate-code-http-409.png`, `api09-13-postgresql-unchanged-after-rejections.png` |
+| API-09 protected field correction | PUT equipment ID 1 with `isAvailable: false` returned HTTP 400 and `invalid_equipment`; a subsequent GET still showed `isAvailable: true`. Earlier route screenshots were removed because they preceded this required guard. | `api09-15-protected-field-http-400.png`, `api09-16-availability-unchanged-after-400.png` |
+| API-10 single equipment borrow | POST `/api/v1/borrowings` returned HTTP 201 with Location `/api/v1/borrowings/1` and the active borrowing details. | `api10-02-borrow-equipment-http-201.png` |
+| API-10 independent database readback | PostgreSQL showed borrowing ID 1 for student 1 and equipment 1, borrowed on 2026-11-15 with expected return 2026-11-20 and Active status. | `api10-03-postgresql-borrowing-readback.png` |
+| API-10 borrowing availability readback | PostgreSQL showed equipment ID 1 marked unavailable after the borrowing. | `api10-04-postgresql-equipment-unavailable.png` |
+| API-10 already borrowed item | Repeating the borrowing request for equipment ID 1 returned HTTP 409 and `borrowing_conflict`. | `api10-05-unavailable-equipment-http-409.png` |
+| API-10 invalid date | Past expected return date returned HTTP 400 and `invalid_borrowing`. | `api10-06-past-date-http-400.png` |
+| API-10 missing student | Borrowing with unknown student ID returned HTTP 404 and `not_found`. | `api10-07-missing-student-http-404.png` |
+| API-10 restricted student | Student 1 was restricted; borrowing equipment ID 2 returned HTTP 409 and `borrowing_conflict`. Student eligibility was restored afterward. | `api10-08-restrict-student-for-borrow-test.png`, `api10-09-restricted-student-http-409.png`, `api10-10-restore-student-eligibility.png` |
+| API-10 build | API including single equipment borrowing built successfully. | `api10-11-build-succeeded.png` |

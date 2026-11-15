@@ -152,6 +152,7 @@ public class BorrowEquipmentService
             // ---- Step 3: write one borrowing per item and mark each item unavailable ----
 
             int itemsWritten = 0;
+            int? firstBorrowingId = null;
 
             foreach (Equipment equipment in itemsToIssue)
             {
@@ -167,6 +168,7 @@ public class BorrowEquipmentService
 
                 // Sends the INSERT and UPDATE to PostgreSQL, but they are not permanent yet.
                 await unitOfWork.SaveChangesAsync(cancellationToken);
+                firstBorrowingId ??= borrowing.Id;
                 itemsWritten++;
 
                 // TEST SEAM: fail after a real write happened inside the transaction.
@@ -192,7 +194,8 @@ public class BorrowEquipmentService
 
             return OperationResult.Success(
                 $"{BuildItemList(itemsToIssue)} issued to {student.Name}. " +
-                $"Expected return: {expectedReturnDate.Value:yyyy-MM-dd}.");
+                $"Expected return: {expectedReturnDate.Value:yyyy-MM-dd}.",
+                firstBorrowingId);
         }
         catch (SimulatedFailureException ex)
         {

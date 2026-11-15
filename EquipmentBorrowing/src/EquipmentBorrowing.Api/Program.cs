@@ -436,6 +436,15 @@ app.MapPut("/api/v1/equipment/{id:int}", async (
     EquipmentQueryService equipmentQueryService,
     CancellationToken cancellationToken) =>
 {
+    if (request.ExtraFields is { Count: > 0 })
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_equipment",
+            message = "Unknown or protected equipment fields cannot be updated."
+        });
+    }
+
     OperationResult result = await equipmentService.UpdateEquipmentAsync(
         id,
         request.EquipmentCode,
@@ -509,6 +518,70 @@ app.MapPut("/api/v1/equipment/{id:int}", async (
     });
 });
 
+app.MapPost("/api/v1/borrowings", async (
+    BorrowEquipmentRequest request,
+    BorrowEquipmentService borrowingService,
+    CancellationToken cancellationToken) =>
+{
+    if (request.StudentId <= 0 || request.EquipmentId <= 0 || request.ExpectedReturnDate is null)
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_borrowing",
+            message = "A student, equipment item, and expected return date are required."
+        });
+    }
+
+    OperationResult result = await borrowingService.BorrowAsync(
+        request.StudentId,
+        request.EquipmentId,
+        request.ExpectedReturnDate,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new { code = "not_found", message = result.Message });
+    }
+
+    if (result.Kind is ResultKind.Rejected or ResultKind.Conflict)
+    {
+        bool conflict = result.Kind == ResultKind.Conflict
+            || result.Message.Contains("restricted", StringComparison.OrdinalIgnoreCase)
+            || result.Message.Contains("over the limit", StringComparison.OrdinalIgnoreCase)
+            || result.Message.Contains("not available", StringComparison.OrdinalIgnoreCase);
+
+        return Results.Json(
+            new { code = conflict ? "borrowing_conflict" : "invalid_borrowing", message = result.Message },
+            statusCode: conflict ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new { code = "unknown_outcome", message = "The save outcome is unknown. Check the borrowing list before retrying." },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess || result.RecordId is null)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not borrow equipment." },
+            statusCode: 500);
+    }
+
+    int id = result.RecordId.Value;
+    return Results.Created($"/api/v1/borrowings/{id}", new
+    {
+        id,
+        studentId = request.StudentId,
+        equipmentId = request.EquipmentId,
+        dateBorrowed = DateOnly.FromDateTime(DateTime.Now),
+        expectedReturnDate = request.ExpectedReturnDate.Value,
+        status = "Active",
+        returnedAt = (DateOnly?)null
+    });
+});
+
 app.Run();
 
 
@@ -522,4 +595,13 @@ record EligibilityRequest(bool? IsEligible);
 record CreateEquipmentRequest(
     string? EquipmentCode,
     string? Name,
-    string? Description);
+    string? Description)
+{
+    [System.Text.Json.Serialization.JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? ExtraFields { get; init; }
+}
+
+record BorrowEquipmentRequest(
+    int StudentId,
+    int EquipmentId,
+    DateOnly? ExpectedReturnDate);
