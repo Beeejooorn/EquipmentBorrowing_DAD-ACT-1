@@ -692,6 +692,81 @@ app.MapPost("/api/v1/checkout-requests", async (
     return Results.Created("/api/v1/borrowings", new { borrowings });
 });
 
+app.MapPost("/api/v1/borrowings/{id:int}/return", async (
+    int id,
+    ReturnEquipmentService returnService,
+    BorrowingQueryService borrowingQueryService,
+    CancellationToken cancellationToken) =>
+{
+    if (id <= 0)
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_borrowing",
+            message = "A valid borrowing ID is required."
+        });
+    }
+
+    OperationResult result = await returnService.ReturnAsync(id, cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new { code = "not_found", message = result.Message });
+    }
+
+    if (result.Kind == ResultKind.Rejected)
+    {
+        bool alreadyReturned = result.Message.Contains("already returned", StringComparison.OrdinalIgnoreCase);
+        return Results.Json(
+            new { code = alreadyReturned ? "already_returned" : "invalid_return", message = result.Message },
+            statusCode: alreadyReturned ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new { code = "unknown_outcome", message = "The return outcome is unknown. Check the borrowing record before retrying." },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not return the equipment." },
+            statusCode: 500);
+    }
+
+    QueryResult<BorrowingRecord> readback = await borrowingQueryService.SearchBorrowingsAsync(
+        new BorrowingSearchCriteria(),
+        cancellationToken);
+
+    if (!readback.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "readback_failed", message = "The return may have saved, but the borrowing could not be reloaded. Check it before retrying." },
+            statusCode: 500);
+    }
+
+    BorrowingRecord? borrowing = readback.Items.SingleOrDefault(item => item.BorrowingId == id);
+    if (borrowing is null)
+    {
+        return Results.Json(
+            new { code = "readback_failed", message = "The return saved, but the borrowing could not be confirmed. Check it before retrying." },
+            statusCode: 500);
+    }
+
+    return Results.Ok(new
+    {
+        id = borrowing.BorrowingId,
+        studentId = borrowing.StudentId,
+        equipmentId = borrowing.EquipmentId,
+        dateBorrowed = borrowing.DateBorrowed,
+        expectedReturnDate = borrowing.ExpectedReturnDate,
+        status = borrowing.Status.ToString(),
+        returnedAt = borrowing.ReturnedAt
+    });
+});
+
 app.Run();
 
 
