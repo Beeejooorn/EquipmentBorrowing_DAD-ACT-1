@@ -806,6 +806,99 @@ app.MapGet("/api/v1/borrowings/{id:int}", async (
     });
 });
 
+app.MapGet("/api/v1/borrowings", async (
+    string? search,
+    string? status,
+    string? sortBy,
+    string? descending,
+    BorrowingQueryService borrowingQueryService,
+    CancellationToken cancellationToken) =>
+{
+    BorrowingStatusFilter statusFilter = BorrowingStatusFilter.All;
+    if (status is not null)
+    {
+        if (string.Equals(status, "active", StringComparison.OrdinalIgnoreCase))
+        {
+            statusFilter = BorrowingStatusFilter.Active;
+        }
+        else if (string.Equals(status, "returned", StringComparison.OrdinalIgnoreCase))
+        {
+            statusFilter = BorrowingStatusFilter.Returned;
+        }
+        else if (!string.Equals(status, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest(new
+            {
+                code = "invalid_query",
+                message = "status must be all, active, or returned."
+            });
+        }
+    }
+
+    BorrowingSortField sortField = BorrowingSortField.CheckoutDate;
+    if (sortBy is not null)
+    {
+        if (string.Equals(sortBy, "checkoutDate", StringComparison.OrdinalIgnoreCase))
+        {
+            sortField = BorrowingSortField.CheckoutDate;
+        }
+        else if (string.Equals(sortBy, "expectedReturnDate", StringComparison.OrdinalIgnoreCase))
+        {
+            sortField = BorrowingSortField.ExpectedReturnDate;
+        }
+        else
+        {
+            return Results.BadRequest(new
+            {
+                code = "invalid_query",
+                message = "sortBy must be checkoutDate or expectedReturnDate."
+            });
+        }
+    }
+
+    bool sortDescending = false;
+    if (descending is not null && !bool.TryParse(descending, out sortDescending))
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_query",
+            message = "descending must be true or false."
+        });
+    }
+
+    QueryResult<BorrowingRecord> result = await borrowingQueryService.SearchBorrowingsAsync(
+        new BorrowingSearchCriteria
+        {
+            SearchText = search,
+            Status = statusFilter,
+            SortBy = sortField,
+            SortDescending = sortDescending
+        },
+        cancellationToken);
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not load borrowings." },
+            statusCode: 500);
+    }
+
+    return Results.Ok(result.Items.Select(borrowing => new
+    {
+        id = borrowing.BorrowingId,
+        studentId = borrowing.StudentId,
+        studentNumber = borrowing.StudentNumber,
+        studentName = borrowing.StudentName,
+        equipmentId = borrowing.EquipmentId,
+        equipmentCode = borrowing.EquipmentCode,
+        equipmentName = borrowing.EquipmentName,
+        dateBorrowed = borrowing.DateBorrowed,
+        expectedReturnDate = borrowing.ExpectedReturnDate,
+        status = borrowing.Status.ToString(),
+        returnedAt = borrowing.ReturnedAt
+    }));
+});
+
 app.Run();
 
 
