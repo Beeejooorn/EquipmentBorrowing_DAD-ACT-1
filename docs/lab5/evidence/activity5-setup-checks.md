@@ -44,3 +44,11 @@
 | API-05 missing student | PUT unknown student ID returned HTTP 404 with `not_found` JSON body. | `api05-08-missing-student-http-404.png` |
 | API-05 blank-name validation | PUT student 1 with blank `fullName` returned HTTP 400 and `Full name is required.` Independent readback pending. | `api05-09-blank-name-http-400.png` |
 | API-05 rejected-update readback | PostgreSQL still showed one student ID 1, updated name, and `ContactInfo IS NULL = t` after HTTP 400. | `api05-10-postgresql-unchanged-after-400.png` |
+| API-06 build | API including student eligibility route built successfully. | `api06-03-build-succeeded.png` |
+| API-06 restrict student | Completed PATCH returned HTTP 200 with `isEligible: false`. Screenshot also shows an earlier incomplete PowerShell command that never reached the API; only the successful retry is counted. | `api06-04-restrict-student-http-200.png` |
+| API-06 PostgreSQL restriction readback | Independent PostgreSQL query showed `IsAllowedToBorrow = f` for student ID 1. | `api06-05-postgresql-restricted.png` |
+| API-06 repeat restriction | Repeating PATCH `isEligible: false` returned HTTP 200 with eligibility still false; the application service has an explicit no-change branch. | `api06-06-repeat-restriction-http-200.png` |
+| API-06 restore eligibility | PATCH `isEligible: true` returned HTTP 200 and eligible student JSON. | `api06-07-restore-eligibility-http-200.png` |
+| API-06 PostgreSQL restoration readback | Independent PostgreSQL query showed `IsAllowedToBorrow = t` for student ID 1. | `api06-08-postgresql-eligible-again.png` |
+| API-06 missing eligibility value | PATCH with `{}` returned HTTP 400 and `invalid_eligibility`. | `api06-09-missing-value-http-400.png` |
+| API-06 unknown student | PATCH unknown student ID returned HTTP 404 with `not_found`. | `api06-10-missing-student-http-404.png` |

@@ -262,6 +262,81 @@ app.MapPut("/api/v1/students/{id:int}", async (
     });
 });
 
+app.MapPatch("/api/v1/students/{id:int}/eligibility", async (
+    int id,
+    EligibilityRequest request,
+    StudentManagementService studentService,
+    StudentQueryService studentQueryService,
+    CancellationToken cancellationToken) =>
+{
+    if (request.IsEligible is null)
+    {
+        return Results.BadRequest(new
+        {
+            code = "invalid_eligibility",
+            message = "isEligible must be true or false."
+        });
+    }
+
+    OperationResult result = await studentService.ChangeEligibilityAsync(
+        id,
+        request.IsEligible.Value,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new
+        {
+            code = "not_found",
+            message = "Student not found."
+        });
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new
+            {
+                code = "unknown_outcome",
+                message = "The save outcome is unknown. Check the student before retrying."
+            },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not change eligibility." },
+            statusCode: 500);
+    }
+
+    var readback = await studentQueryService.GetStudentByIdAsync(
+        id,
+        cancellationToken);
+
+    if (!readback.IsSuccess)
+    {
+        return Results.Json(
+            new
+            {
+                code = "readback_failed",
+                message = "The change may have saved, but the student could not be reloaded. Check the student before retrying."
+            },
+            statusCode: 500);
+    }
+
+    var student = readback.Items[0];
+
+    return Results.Ok(new
+    {
+        id = student.Id,
+        studentNumber = student.StudentNumber,
+        fullName = student.Name,
+        contact = student.ContactInfo,
+        isEligible = student.IsAllowedToBorrow
+    });
+});
+
 app.Run();
 
 
@@ -269,3 +344,5 @@ record CreateStudentRequest(
     string? StudentNumber,
     string? FullName,
     string? Contact);
+
+record EligibilityRequest(bool? IsEligible);
