@@ -52,3 +52,10 @@
 | API-06 PostgreSQL restoration readback | Independent PostgreSQL query showed `IsAllowedToBorrow = t` for student ID 1. | `api06-08-postgresql-eligible-again.png` |
 | API-06 missing eligibility value | PATCH with `{}` returned HTTP 400 and `invalid_eligibility`. | `api06-09-missing-value-http-400.png` |
 | API-06 unknown student | PATCH unknown student ID returned HTTP 404 with `not_found`. | `api06-10-missing-student-http-404.png` |
+| API-07 equipment lookup build | API with equipment-by-ID route built successfully. | `api07-03-build-succeeded.png` |
+| API-07 missing equipment | GET unknown equipment ID returned `not_found` JSON and HTTP 404. | `api07-04-equipment-not-found-body.png`, `api07-05-equipment-not-found-http-404.png` |
+| API-07 existing equipment | GET equipment ID 1 returned HTTP 200 with code, name, description, and availability. | `api07-07-equipment-by-id-http-200.png` |
+| API-08 registration build | API with equipment registration route built successfully. | `api08-04-build-succeeded.png` |
+| API-08 create equipment | POST created equipment ID 2 with HTTP 201, Location `/api/v1/equipment/2`, and complete JSON body. | `api08-05-register-equipment-http-201.png` |
+| API-08 duplicate rejection | Repeating POST returned HTTP 409 with `duplicate_equipment_code`. GET equipment still showed two rows. | `api08-06-duplicate-equipment-http-409.png`, `api08-07-two-equipment-after-duplicate.png` |
+| API-08 independent database readback | PostgreSQL showed exactly two available equipment rows after duplicate rejection. | `api08-08-postgresql-two-equipment-after-duplicate.png` |

@@ -14,6 +14,30 @@ public class EquipmentQueryService
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _errorClassifier = errorClassifier;
+
+    }
+
+
+    public async Task<QueryResult<Equipment>> GetEquipmentByIdAsync(
+    int equipmentId,
+    CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+            Equipment? equipment = await unitOfWork.Equipment.GetByIdAsync(
+                equipmentId,
+                cancellationToken);
+
+            return equipment is null
+                ? QueryResult<Equipment>.NotFound("Equipment not found.")
+                : QueryResult<Equipment>.Ok(new List<Equipment> { equipment });
+        }
+        catch (Exception ex)
+        {
+            return QueryResult<Equipment>.Error(
+                DatabaseErrors.ToLoadMessage(_errorClassifier.Classify(ex)));
+        }
     }
 
     // UC-01

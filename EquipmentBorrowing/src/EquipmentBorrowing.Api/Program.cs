@@ -337,6 +337,98 @@ app.MapPatch("/api/v1/students/{id:int}/eligibility", async (
     });
 });
 
+app.MapGet("/api/v1/equipment/{id:int}", async (
+    int id,
+    EquipmentQueryService equipmentService,
+    CancellationToken cancellationToken) =>
+{
+    var result = await equipmentService.GetEquipmentByIdAsync(
+        id,
+        cancellationToken);
+
+    if (result.IsNotFound)
+    {
+        return Results.NotFound(new
+        {
+            code = "not_found",
+            message = "Equipment not found."
+        });
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not load equipment." },
+            statusCode: 500);
+    }
+
+    var equipment = result.Items[0];
+
+    return Results.Ok(new
+    {
+        id = equipment.Id,
+        equipmentCode = equipment.EquipmentCode,
+        name = equipment.Name,
+        description = equipment.Description,
+        isAvailable = equipment.IsAvailable
+    });
+});
+
+app.MapPost("/api/v1/equipment", async (
+    CreateEquipmentRequest request,
+    EquipmentManagementService equipmentService,
+    CancellationToken cancellationToken) =>
+{
+    OperationResult result = await equipmentService.RegisterEquipmentAsync(
+        request.EquipmentCode,
+        request.Name,
+        request.Description,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.Rejected)
+    {
+        bool duplicate = result.Message.Contains("already registered");
+        return Results.Json(
+            new
+            {
+                code = duplicate ? "duplicate_equipment_code" : "invalid_equipment",
+                message = result.Message
+            },
+            statusCode: duplicate ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new
+            {
+                code = "unknown_outcome",
+                message = "The save outcome is unknown. Check the equipment list before retrying."
+            },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess || result.RecordId is null)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not register equipment." },
+            statusCode: 500);
+    }
+
+    int id = result.RecordId.Value;
+
+    return Results.Created($"/api/v1/equipment/{id}", new
+    {
+        id,
+        equipmentCode = request.EquipmentCode!.Trim(),
+        name = request.Name!.Trim(),
+        description = string.IsNullOrWhiteSpace(request.Description)
+            ? null
+            : request.Description.Trim(),
+        isAvailable = true
+    });
+});
+
 app.Run();
 
 
@@ -346,3 +438,8 @@ record CreateStudentRequest(
     string? Contact);
 
 record EligibilityRequest(bool? IsEligible);
+
+record CreateEquipmentRequest(
+    string? EquipmentCode,
+    string? Name,
+    string? Description);
