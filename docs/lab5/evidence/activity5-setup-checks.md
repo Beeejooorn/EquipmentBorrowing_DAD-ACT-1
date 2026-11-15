@@ -36,3 +36,11 @@
 | API-04 duplicate rejection | Repeating the registration returned HTTP 409 with `duplicate_student_number` and `Nothing was saved.` | `api04-06-duplicate-student-http-409.png` |
 | API-04 duplicate readback | After HTTP 409, `GET /api/v1/students` still showed exactly one `ST-LAB5-001` record. Independent PostgreSQL readback remains to be captured. | `api04-07-one-student-after-duplicate.png` |
 | API-04 independent database readback | Fresh `psql` connection to `equipmentborrowing_lab5` showed exactly one eligible `ST-LAB5-001` row after duplicate rejection. | `api04-08-postgresql-one-student-after-duplicate.png` |
+| API-05 build | API including student update built successfully. | `api05-03-build-succeeded.png` |
+| API-05 update | PUT student 1 returned HTTP 200 with same ID, updated name/contact, and eligibility true. PostgreSQL readback pending. | `api05-04-update-student-http-200.png` |
+| API-05 PostgreSQL readback | Separate `psql` session showed ID 1 with updated name/contact and eligibility unchanged. | `api05-05-postgresql-update-readback.png` |
+| API-05 clear contact | PUT student 1 with `contact: null` returned HTTP 200 and `contact: null` in response; database readback pending. | `api05-06-clear-contact-http-200.png` |
+| API-05 clear-contact database check | Independent PostgreSQL query showed `ContactInfo IS NULL = t` for student ID 1. | `api05-07-postgresql-contact-is-null.png` |
+| API-05 missing student | PUT unknown student ID returned HTTP 404 with `not_found` JSON body. | `api05-08-missing-student-http-404.png` |
+| API-05 blank-name validation | PUT student 1 with blank `fullName` returned HTTP 400 and `Full name is required.` Independent readback pending. | `api05-09-blank-name-http-400.png` |
+| API-05 rejected-update readback | PostgreSQL still showed one student ID 1, updated name, and `ContactInfo IS NULL = t` after HTTP 400. | `api05-10-postgresql-unchanged-after-400.png` |

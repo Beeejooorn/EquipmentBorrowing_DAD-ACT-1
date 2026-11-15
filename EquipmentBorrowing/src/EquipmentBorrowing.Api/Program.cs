@@ -182,6 +182,86 @@ app.MapPost("/api/v1/students", async (
     });
 });
 
+app.MapPut("/api/v1/students/{id:int}", async (
+    int id,
+    CreateStudentRequest request,
+    StudentManagementService studentService,
+    StudentQueryService studentQueryService,
+    CancellationToken cancellationToken) =>
+{
+    OperationResult result = await studentService.UpdateStudentAsync(
+        id,
+        request.StudentNumber,
+        request.FullName,
+        request.Contact,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new
+        {
+            code = "not_found",
+            message = "Student not found."
+        });
+    }
+
+    if (result.Kind == ResultKind.Rejected)
+    {
+        bool duplicate = result.Message.Contains("already registered");
+        return Results.Json(
+            new
+            {
+                code = duplicate ? "duplicate_student_number" : "invalid_student",
+                message = result.Message
+            },
+            statusCode: duplicate ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new
+            {
+                code = "unknown_outcome",
+                message = "The save outcome is unknown. Check the student before retrying."
+            },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not update student." },
+            statusCode: 500);
+    }
+
+    var readback = await studentQueryService.GetStudentByIdAsync(
+        id,
+        cancellationToken);
+
+    if (!readback.IsSuccess)
+    {
+        return Results.Json(
+            new
+            {
+                code = "readback_failed",
+                message = "The update may have saved, but the student could not be reloaded. Check the student before retrying."
+            },
+            statusCode: 500);
+    }
+
+    var student = readback.Items[0];
+
+    return Results.Ok(new
+    {
+        id = student.Id,
+        studentNumber = student.StudentNumber,
+        fullName = student.Name,
+        contact = student.ContactInfo,
+        isEligible = student.IsAllowedToBorrow
+    });
+});
+
 app.Run();
 
 
