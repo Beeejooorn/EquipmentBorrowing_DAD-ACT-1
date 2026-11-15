@@ -43,4 +43,26 @@ public class StudentQueryService
             return QueryResult<Student>.Error(DatabaseErrors.ToLoadMessage(_errorClassifier.Classify(ex)));
         }
     }
+
+    public async Task<QueryResult<Student>> GetStudentByIdAsync(
+    int studentId,
+    CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+            Student? student = await unitOfWork.Students.GetByIdAsync(
+                studentId,
+                cancellationToken);
+
+            return student is null
+                ? QueryResult<Student>.NotFound("Student not found.")
+                : QueryResult<Student>.Ok(new List<Student> { student });
+        }
+        catch (Exception ex)
+        {
+            return QueryResult<Student>.Error(
+                DatabaseErrors.ToLoadMessage(_errorClassifier.Classify(ex)));
+        }
+    }
 }

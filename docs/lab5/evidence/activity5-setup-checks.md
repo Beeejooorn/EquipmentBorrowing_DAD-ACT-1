@@ -24,3 +24,15 @@
 | API-01 invalid filter body | `available=maybe` returned `{ "code": "invalid_query", "message": "available must be true or false." }`; HTTP status still to verify. | `api01-04-invalid-filter-body.png` |
 | API-01 invalid filter status | `GET /api/v1/equipment?available=maybe` returned HTTP 400 and the expected JSON error body. | `api01-05-invalid-filter-http-400.png` |
 | API-01 empty-list status | `GET /api/v1/equipment` returned HTTP 200 with `[]`. | `api01-06-empty-list-http-200.png` |
+| API-02 build | Updated API with `GET /api/v1/students` built successfully. | User-provided PowerShell output (text) |
+| API-02 empty list | `GET /api/v1/students` returned `[]` against the empty Activity 5 database. | `api02-03-empty-student-list.png` |
+| API-02/03 build | API with student list and student-by-ID routes built successfully. | User-provided PowerShell output (text) |
+| API-03 missing student body | `GET /api/v1/students/999999` returned `{ "code": "not_found", "message": "Student not found." }`; HTTP status still to verify. | `api03-04-missing-student-body.png` |
+| API-03 missing student status | `GET /api/v1/students/999999` returned HTTP 404; JSON body captured separately. | User-provided PowerShell output (text) and `api03-04-missing-student-body.png` |
+| API-04 build | API including student registration built successfully. | `api04-04-build-succeeded.png` |
+| API-04 create and API-02 readback | POST student returned HTTP 201, Location `/api/v1/students/1`, and eligible student JSON; subsequent GET students showed the same record. | `api04-05-register-student-http-201.png`, `api02-04-student-list-after-registration.png` |
+| API-03 created-student readback | `GET /api/v1/students/1` returned the same student registered by API-04. | `api03-06-created-student-by-id.png` |
+| API-02 student search | `GET /api/v1/students?search=Tester` returned the registered Lab Five Tester in an array. | `api02-05-search-tester.png` |
+| API-04 duplicate rejection | Repeating the registration returned HTTP 409 with `duplicate_student_number` and `Nothing was saved.` | `api04-06-duplicate-student-http-409.png` |
+| API-04 duplicate readback | After HTTP 409, `GET /api/v1/students` still showed exactly one `ST-LAB5-001` record. Independent PostgreSQL readback remains to be captured. | `api04-07-one-student-after-duplicate.png` |
+| API-04 independent database readback | Fresh `psql` connection to `equipmentborrowing_lab5` showed exactly one eligible `ST-LAB5-001` row after duplicate rejection. | `api04-08-postgresql-one-student-after-duplicate.png` |
