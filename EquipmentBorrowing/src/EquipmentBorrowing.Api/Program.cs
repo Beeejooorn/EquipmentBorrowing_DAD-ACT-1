@@ -575,10 +575,10 @@ app.MapPost("/api/v1/borrowings", async (
         id,
         studentId = request.StudentId,
         equipmentId = request.EquipmentId,
-        dateBorrowed = DateOnly.FromDateTime(DateTime.Now),
+        borrowedDate = DateOnly.FromDateTime(DateTime.Now),
         expectedReturnDate = request.ExpectedReturnDate.Value,
         status = "Active",
-        returnedAt = (DateOnly?)null
+        returnedDate = (DateOnly?)null
     });
 });
 
@@ -675,10 +675,10 @@ app.MapPost("/api/v1/checkout-requests", async (
             id = borrowing.BorrowingId,
             studentId = borrowing.StudentId,
             equipmentId = borrowing.EquipmentId,
-            dateBorrowed = borrowing.DateBorrowed,
+            borrowedDate = borrowing.DateBorrowed,
             expectedReturnDate = borrowing.ExpectedReturnDate,
             status = borrowing.Status.ToString(),
-            returnedAt = borrowing.ReturnedAt
+            returnedDate = borrowing.ReturnedAt
         })
         .ToList();
 
@@ -760,10 +760,10 @@ app.MapPost("/api/v1/borrowings/{id:int}/return", async (
         id = borrowing.BorrowingId,
         studentId = borrowing.StudentId,
         equipmentId = borrowing.EquipmentId,
-        dateBorrowed = borrowing.DateBorrowed,
+        borrowedDate = borrowing.DateBorrowed,
         expectedReturnDate = borrowing.ExpectedReturnDate,
         status = borrowing.Status.ToString(),
-        returnedAt = borrowing.ReturnedAt
+        returnedDate = borrowing.ReturnedAt
     });
 });
 
@@ -799,18 +799,18 @@ app.MapGet("/api/v1/borrowings/{id:int}", async (
         equipmentId = borrowing.EquipmentId,
         equipmentCode = borrowing.EquipmentCode,
         equipmentName = borrowing.EquipmentName,
-        dateBorrowed = borrowing.DateBorrowed,
+        borrowedDate = borrowing.DateBorrowed,
         expectedReturnDate = borrowing.ExpectedReturnDate,
         status = borrowing.Status.ToString(),
-        returnedAt = borrowing.ReturnedAt
+        returnedDate = borrowing.ReturnedAt
     });
 });
 
 app.MapGet("/api/v1/borrowings", async (
     string? search,
     string? status,
-    string? sortBy,
-    string? descending,
+    string? sort,
+    string? direction,
     BorrowingQueryService borrowingQueryService,
     CancellationToken cancellationToken) =>
 {
@@ -836,13 +836,13 @@ app.MapGet("/api/v1/borrowings", async (
     }
 
     BorrowingSortField sortField = BorrowingSortField.CheckoutDate;
-    if (sortBy is not null)
+    if (sort is not null)
     {
-        if (string.Equals(sortBy, "checkoutDate", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(sort, "borrowedDate", StringComparison.OrdinalIgnoreCase))
         {
             sortField = BorrowingSortField.CheckoutDate;
         }
-        else if (string.Equals(sortBy, "expectedReturnDate", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(sort, "expectedReturnDate", StringComparison.OrdinalIgnoreCase))
         {
             sortField = BorrowingSortField.ExpectedReturnDate;
         }
@@ -851,19 +851,26 @@ app.MapGet("/api/v1/borrowings", async (
             return Results.BadRequest(new
             {
                 code = "invalid_query",
-                message = "sortBy must be checkoutDate or expectedReturnDate."
+                message = "sort must be borrowedDate or expectedReturnDate."
             });
         }
     }
 
     bool sortDescending = false;
-    if (descending is not null && !bool.TryParse(descending, out sortDescending))
+    if (direction is not null)
     {
-        return Results.BadRequest(new
+        if (string.Equals(direction, "desc", StringComparison.OrdinalIgnoreCase))
         {
-            code = "invalid_query",
-            message = "descending must be true or false."
-        });
+            sortDescending = true;
+        }
+        else if (!string.Equals(direction, "asc", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest(new
+            {
+                code = "invalid_query",
+                message = "direction must be asc or desc."
+            });
+        }
     }
 
     QueryResult<BorrowingRecord> result = await borrowingQueryService.SearchBorrowingsAsync(
@@ -892,10 +899,10 @@ app.MapGet("/api/v1/borrowings", async (
         equipmentId = borrowing.EquipmentId,
         equipmentCode = borrowing.EquipmentCode,
         equipmentName = borrowing.EquipmentName,
-        dateBorrowed = borrowing.DateBorrowed,
+        borrowedDate = borrowing.DateBorrowed,
         expectedReturnDate = borrowing.ExpectedReturnDate,
         status = borrowing.Status.ToString(),
-        returnedAt = borrowing.ReturnedAt
+        returnedDate = borrowing.ReturnedAt
     }));
 });
 

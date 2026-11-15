@@ -81,3 +81,5 @@
 | API-13 borrowing lookup | GET /api/v1/borrowings/2 returned HTTP 200 with borrowing and student/equipment details; unknown ID 999999 returned HTTP 404 with not_found. The API build succeeded. | api13-01-build-succeeded.png, api13-02-borrowing-by-id-http-200.png, api13-03-missing-borrowing-http-404.png |
 
 | API-14 borrowing search, filters, and sort | API build succeeded. GET borrowing list returned HTTP 200 with 3 records; active and returned filters returned HTTP 200 with 2 and 1 records; case-insensitive Webcam search returned one result; expectedReturnDate descending returned HTTP 200; no-match search returned HTTP 200 with an empty list; invalid status returned HTTP 400 with invalid_query. | api14-01-build-succeeded.png through api14-05-empty-search-and-invalid-status.png |
+
+| API-14 contract correction | The corrected API build succeeded. GET with search=webcam, status=Active, sort=expectedReturnDate and direction=desc returned HTTP 200 with the Webcam borrowing and borrowedDate/returnedDate JSON fields. | api14-06-contract-correction-build-succeeded.png, api14-07-contract-query-http-200.png |
