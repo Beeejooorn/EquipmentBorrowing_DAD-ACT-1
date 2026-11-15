@@ -429,6 +429,86 @@ app.MapPost("/api/v1/equipment", async (
     });
 });
 
+app.MapPut("/api/v1/equipment/{id:int}", async (
+    int id,
+    CreateEquipmentRequest request,
+    EquipmentManagementService equipmentService,
+    EquipmentQueryService equipmentQueryService,
+    CancellationToken cancellationToken) =>
+{
+    OperationResult result = await equipmentService.UpdateEquipmentAsync(
+        id,
+        request.EquipmentCode,
+        request.Name,
+        request.Description,
+        cancellationToken);
+
+    if (result.Kind == ResultKind.NotFound)
+    {
+        return Results.NotFound(new
+        {
+            code = "not_found",
+            message = "Equipment not found."
+        });
+    }
+
+    if (result.Kind == ResultKind.Rejected)
+    {
+        bool duplicate = result.Message.Contains("already belongs");
+        return Results.Json(
+            new
+            {
+                code = duplicate ? "duplicate_equipment_code" : "invalid_equipment",
+                message = result.Message
+            },
+            statusCode: duplicate ? 409 : 400);
+    }
+
+    if (result.Kind == ResultKind.UnknownOutcome)
+    {
+        return Results.Json(
+            new
+            {
+                code = "unknown_outcome",
+                message = "The save outcome is unknown. Check the equipment before retrying."
+            },
+            statusCode: 500);
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(
+            new { code = "server_error", message = "Could not update equipment." },
+            statusCode: 500);
+    }
+
+    var readback = await equipmentQueryService.GetEquipmentByIdAsync(
+        id,
+        cancellationToken);
+
+    if (!readback.IsSuccess)
+    {
+        return Results.Json(
+            new
+            {
+                code = "readback_failed",
+                message = "The update may have saved, but the equipment could not be reloaded. Check it before retrying."
+            },
+            statusCode: 500);
+    }
+
+    var equipment = readback.Items[0];
+
+    return Results.Ok(new
+    {
+        id = equipment.Id,
+        equipmentCode = equipment.EquipmentCode,
+        name = equipment.Name,
+        description = equipment.Description,
+        isAvailable = equipment.IsAvailable
+    });
+});
+
 app.Run();
 
 

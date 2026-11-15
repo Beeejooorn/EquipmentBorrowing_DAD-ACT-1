@@ -59,3 +59,10 @@
 | API-08 create equipment | POST created equipment ID 2 with HTTP 201, Location `/api/v1/equipment/2`, and complete JSON body. | `api08-05-register-equipment-http-201.png` |
 | API-08 duplicate rejection | Repeating POST returned HTTP 409 with `duplicate_equipment_code`. GET equipment still showed two rows. | `api08-06-duplicate-equipment-http-409.png`, `api08-07-two-equipment-after-duplicate.png` |
 | API-08 independent database readback | PostgreSQL showed exactly two available equipment rows after duplicate rejection. | `api08-08-postgresql-two-equipment-after-duplicate.png` |
+| API-09 update build | API with equipment update route built successfully. | `api09-03-build-succeeded.png` |
+| API-09 update and GET readback | PUT equipment ID 1 returned HTTP 200 with updated name and description; GET by ID showed the same fields with availability still true. | `api09-04-update-equipment-http-200.png`, `api09-05-update-equipment-get-readback.png` |
+| API-09 independent update readback | PostgreSQL showed the updated name and description with availability unchanged. | `api09-06-postgresql-update-readback.png` |
+| API-09 clear description | PUT equipment ID 1 with `description: null` returned HTTP 200; GET and PostgreSQL showed the description is null while availability stayed true. | `api09-07-clear-description-http-200.png`, `api09-08-clear-description-get-readback.png`, `api09-09-postgresql-description-null.png` |
+| API-09 missing equipment | PUT unknown equipment ID returned HTTP 404 with `not_found`. | `api09-10-missing-equipment-http-404.png` |
+| API-09 blank name | PUT equipment ID 1 with blank name returned HTTP 400 and `invalid_equipment`. | `api09-11-blank-name-http-400.png` |
+| API-09 duplicate code | PUT equipment ID 1 using ID 2's code returned HTTP 409 and `duplicate_equipment_code`. PostgreSQL still had the original codes and exactly two rows. | `api09-12-duplicate-code-http-409.png`, `api09-13-postgresql-unchanged-after-rejections.png` |
