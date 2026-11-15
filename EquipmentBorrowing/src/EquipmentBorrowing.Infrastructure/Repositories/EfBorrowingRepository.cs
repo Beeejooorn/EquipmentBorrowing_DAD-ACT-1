@@ -29,6 +29,15 @@ public class EfBorrowingRepository : IBorrowingRepository
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
+    public async Task<BorrowingRecord?> GetRecordByIdAsync(
+        int id, CancellationToken cancellationToken = default)
+    {
+        return await ToRecords(_context.Borrowings
+                .AsNoTracking()
+                .Where(b => b.Id == id))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<int> CountActiveByStudentAsync(
         int studentId, CancellationToken cancellationToken = default)
     {

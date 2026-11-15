@@ -31,6 +31,23 @@ public class BorrowingQueryService
         }
     }
 
+    public async Task<QueryResult<BorrowingRecord>> GetBorrowingByIdAsync(
+        int borrowingId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+            BorrowingRecord? record = await unitOfWork.Borrowings.GetRecordByIdAsync(borrowingId, cancellationToken);
+            return record is null
+                ? QueryResult<BorrowingRecord>.NotFound("Borrowing not found.")
+                : QueryResult<BorrowingRecord>.Ok(new List<BorrowingRecord> { record });
+        }
+        catch (Exception ex)
+        {
+            return QueryResult<BorrowingRecord>.Error(DatabaseErrors.ToLoadMessage(_errorClassifier.Classify(ex)));
+        }
+    }
+
     // UC-07 View Student Borrowing History (active and returned, only this student).
     public async Task<QueryResult<BorrowingRecord>> GetStudentHistoryAsync(int studentId, CancellationToken cancellationToken = default)
     {

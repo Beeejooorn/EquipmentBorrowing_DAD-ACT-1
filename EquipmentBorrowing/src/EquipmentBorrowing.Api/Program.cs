@@ -767,6 +767,45 @@ app.MapPost("/api/v1/borrowings/{id:int}/return", async (
     });
 });
 
+app.MapGet("/api/v1/borrowings/{id:int}", async (
+    int id,
+    BorrowingQueryService borrowingQueryService,
+    CancellationToken cancellationToken) =>
+{
+    if (id <= 0)
+    {
+        return Results.BadRequest(new { code = "invalid_borrowing", message = "A valid borrowing ID is required." });
+    }
+
+    QueryResult<BorrowingRecord> result = await borrowingQueryService.GetBorrowingByIdAsync(id, cancellationToken);
+
+    if (result.IsNotFound)
+    {
+        return Results.NotFound(new { code = "not_found", message = result.ErrorMessage });
+    }
+
+    if (!result.IsSuccess)
+    {
+        return Results.Json(new { code = "server_error", message = "Could not load borrowing." }, statusCode: 500);
+    }
+
+    BorrowingRecord borrowing = result.Items[0];
+    return Results.Ok(new
+    {
+        id = borrowing.BorrowingId,
+        studentId = borrowing.StudentId,
+        studentNumber = borrowing.StudentNumber,
+        studentName = borrowing.StudentName,
+        equipmentId = borrowing.EquipmentId,
+        equipmentCode = borrowing.EquipmentCode,
+        equipmentName = borrowing.EquipmentName,
+        dateBorrowed = borrowing.DateBorrowed,
+        expectedReturnDate = borrowing.ExpectedReturnDate,
+        status = borrowing.Status.ToString(),
+        returnedAt = borrowing.ReturnedAt
+    });
+});
+
 app.Run();
 
 
