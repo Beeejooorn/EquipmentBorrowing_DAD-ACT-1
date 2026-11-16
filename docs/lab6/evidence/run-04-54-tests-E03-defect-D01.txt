@@ -1,0 +1,28 @@
+# Run 4 - 2026-11-17 - adds E01-E07: 54 total, 53 passed, 1 failed (TC6-E03 -> application defect D-01)
+# Excerpt of the Windows PowerShell output (the full output repeats the API's own startup and SQL logging for every test, so only the command, build lines, failures and the final summary are kept here).
+
+PS C:\Users\Bjorn> cd C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing
+PS C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing> dotnet test tests\EquipmentBorrowing.Lab6.Tests
+  EquipmentBorrowing.Domain net10.0 succeeded (0.3s) → src\EquipmentBorrowing.Domain\bin\Debug\net10.0\EquipmentBorrowing.Domain.dll
+  EquipmentBorrowing.Application net10.0 succeeded (0.4s) → src\EquipmentBorrowing.Application\bin\Debug\net10.0\EquipmentBorrowing.Application.dll
+  EquipmentBorrowing.Infrastructure net10.0 succeeded (0.4s) → src\EquipmentBorrowing.Infrastructure\bin\Debug\net10.0\EquipmentBorrowing.Infrastructure.dll
+  EquipmentBorrowing.Api net10.0 succeeded (1.3s) → src\EquipmentBorrowing.Api\bin\Debug\net10.0\EquipmentBorrowing.Api.dll
+  EquipmentBorrowing.Desktop net10.0 succeeded (3.8s) → src\EquipmentBorrowing.Desktop\bin\Debug\net10.0\EquipmentBorrowing.Desktop.dll
+  EquipmentBorrowing.Lab6.Tests net10.0 succeeded with 1 warning(s) (1.3s) → tests\EquipmentBorrowing.Lab6.Tests\bin\Debug\net10.0\EquipmentBorrowing.Lab6.Tests.dll
+    C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Lab6.Tests\ValidationEdgeTests.cs(469,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xu
+[xUnit.net 00:00:16.42]     EquipmentBorrowing.Lab6.Tests.ValidationEdgeTests.TC6_E03_Invalid_requests_are_400_and_change_nothing [FAIL]
+[xUnit.net 00:00:16.43]       Assert.DoesNotContain() Failure: Sub-string found
+[xUnit.net 00:00:16.43]       String: ···".Http.BadHttpRequestException: Failed to "···
+[xUnit.net 00:00:16.43]       Found:  "Exception"
+[xUnit.net 00:00:16.43]       Stack Trace:
+[xUnit.net 00:00:16.43]         C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Lab6.Tests\ValidationEdgeTests.cs(15,0): at EquipmentBorrowing.Lab6.Tests.ValidationEdgeTests.AssertNoInternalDetails(ApiRespon
+[xUnit.net 00:00:16.43]         C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Lab6.Tests\ValidationEdgeTests.cs(230,0): at EquipmentBorrowing.Lab6.Tests.ValidationEdgeTests.TC6_E03_Invalid_requests_are_400
+[xUnit.net 00:00:41.36]   Finished:    EquipmentBorrowing.Lab6.Tests
+  EquipmentBorrowing.Lab6.Tests test net10.0 failed with 1 error(s) (42.6s)
+    C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing\tests\EquipmentBorrowing.Lab6.Tests\ValidationEdgeTests.cs(15): error TESTERROR:
+      EquipmentBorrowing.Lab6.Tests.ValidationEdgeTests.TC6_E03_Invalid_requests_are_400_and_change_nothing (533ms): Error Message: Assert.DoesNotContain() Failure: Sub-string found
+      String: ···".Http.BadHttpRequestException: Failed to "···
+      Found:  "Exception"
+      Stack Trace:
+Test summary: total: 54, failed: 1, succeeded: 53, skipped: 0, duration: 42.6s
+Build failed with 1 error(s) and 1 warning(s) in 49.8s

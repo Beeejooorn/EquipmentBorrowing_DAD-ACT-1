@@ -1,8 +1,45 @@
 # Equipment Borrowing System
 
-This repository contains our ITSD 81 laboratory work on a campus equipment borrowing system. The current Activity 5 version uses an ASP.NET Core HTTP API between the Avalonia desktop and PostgreSQL.
+This repository contains our ITSD 81 laboratory work on a campus equipment borrowing system. The current version uses an ASP.NET Core HTTP API between the Avalonia desktop and PostgreSQL; Activity 6 adds automated verification of that API.
 
-The Lab 4 and earlier notes below document earlier versions. Use the Activity 5 instructions first when running the current application.
+The Lab 4 and earlier notes below document earlier versions. Use the Activity 5 instructions first when running the current application, and the Activity 6 section to run the automated tests.
+
+## Laboratory Activity 6: Automated Verification and Regression Testing
+
+Members: Hervy Bjorn C. Tanamal (2022302797) and Steven Andujar Malnegro (2022301783).
+
+Activity 6 adds an xUnit test project, `EquipmentBorrowing/tests/EquipmentBorrowing.Lab6.Tests`, that starts the **real** ASP.NET Core API in the test process (`WebApplicationFactory<Program>`) and sends real HTTP requests to it, against a **real PostgreSQL** test database. It automates the 22 objectives TC6-U01–U09, U12–U16 and E01–E08, plus 5 setup checks and 3 OpenAPI contract checks (56 tests). MA6-01 and MA6-02 are manual acceptance checks and are recorded separately.
+
+### Test setup
+
+1. Prerequisites: .NET 10 SDK and a local PostgreSQL server (the same one as Activity 5). The PostgreSQL user in your connection string must be allowed to create and drop databases.
+2. Connection settings: no credentials are stored in the repository. The tests use the same settings as the API (`dotnet user-secrets` for the API project, or the environment variable `ConnectionStrings__EquipmentBorrowing`) and **replace only the database name** with `equipmentborrowing_lab6_test`. Nothing else is touched; the code refuses to reset a database whose name does not end in `_lab6_test`.
+3. The test database is created automatically on the first run (migrations are applied). Before **every** test the tables are emptied and the fixtures S1–S4 and E1–E7 are inserted again, so tests never depend on each other. Dates are relative to **D = the day you run the tests** (for example the loan of E1 is due D−1). Do not run the tests across midnight.
+4. Close any program that uses port 5188 (only the E08 restart test uses it) and do not run the API against the same database while the tests run.
+
+### Run the tests
+
+From the `EquipmentBorrowing` folder in PowerShell:
+
+```powershell
+dotnet test tests\EquipmentBorrowing.Lab6.Tests
+```
+
+The full run takes about one minute. The output also prints the API's own startup and SQL logging for every test; the result is on the last lines (`Test summary: total: …, failed: …`). To run one test case, for example TC6-E04, add `--filter "FullyQualifiedName~TC6_E04"`.
+
+### Where the evidence is
+
+All Lab 6 documents are in [`docs/lab6`](docs/lab6): [baseline and setup](docs/lab6/baseline-and-setup.md), [traceability matrix](docs/lab6/traceability-matrix.md) (UC → BR → API → TC6 → test → result → evidence, with the API coverage check), [test execution record](docs/lab6/test-execution-record.md) (Passed / Failed / Blocked / Not Run per case), [defect and regression record](docs/lab6/defect-record.md) (D-01) and [manual acceptance checks](docs/lab6/manual-acceptance.md). Run outputs are in `docs/lab6/evidence`.
+
+### Real API restart check (TC6-E08)
+
+The test `PersistenceTests.TC6_E08_Real_API_process_restart_keeps_the_created_and_returned_records` starts the built `EquipmentBorrowing.Api.dll` as its own process on `http://127.0.0.1:5188`, creates and returns records, stops the process, confirms that nothing answers, starts a new process and compares the retrieved records with a fresh PostgreSQL read. Build the solution first (`dotnet test` does this).
+
+### Defect found and fixed in Activity 6
+
+D-01: an invalid JSON body returned internal exception text in Development mode. Fixed with a small middleware in `Program.cs` that returns `400 {"code":"invalid_request",…}`. See the defect record.
+
+---
 
 ## Laboratory Activity 5: HTTP API and Desktop Client
 

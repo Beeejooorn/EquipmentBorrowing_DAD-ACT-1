@@ -1,0 +1,15 @@
+# Run 2 - 2026-11-17 - U01-U09 + OpenAPI contract tests: 32 total, 32 passed
+# Excerpt of the Windows PowerShell output (the full output repeats the API's own startup and SQL logging for every test, so only the command, build lines, failures and the final summary are kept here).
+
+PS C:\Users\Bjorn> cd C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing
+PS C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1\EquipmentBorrowing> dotnet test tests\EquipmentBorrowing.Lab6.Tests
+  EquipmentBorrowing.Domain net10.0 succeeded (0.3s) → src\EquipmentBorrowing.Domain\bin\Debug\net10.0\EquipmentBorrowing.Domain.dll
+  EquipmentBorrowing.Application net10.0 succeeded (0.5s) → src\EquipmentBorrowing.Application\bin\Debug\net10.0\EquipmentBorrowing.Application.dll
+  EquipmentBorrowing.Infrastructure net10.0 succeeded (0.6s) → src\EquipmentBorrowing.Infrastructure\bin\Debug\net10.0\EquipmentBorrowing.Infrastructure.dll
+  EquipmentBorrowing.Api net10.0 succeeded (2.0s) → src\EquipmentBorrowing.Api\bin\Debug\net10.0\EquipmentBorrowing.Api.dll
+  EquipmentBorrowing.Desktop net10.0 succeeded (3.0s) → src\EquipmentBorrowing.Desktop\bin\Debug\net10.0\EquipmentBorrowing.Desktop.dll
+  EquipmentBorrowing.Lab6.Tests net10.0 succeeded (1.1s) → tests\EquipmentBorrowing.Lab6.Tests\bin\Debug\net10.0\EquipmentBorrowing.Lab6.Tests.dll
+[xUnit.net 00:00:24.41]   Finished:    EquipmentBorrowing.Lab6.Tests
+  EquipmentBorrowing.Lab6.Tests test net10.0 succeeded (25.8s)
+Test summary: total: 32, failed: 0, succeeded: 32, skipped: 0, duration: 25.8s
+Build succeeded in 32.1s
