@@ -1029,3 +1029,8 @@ record CheckoutRequest(
     int StudentId,
     List<int>? EquipmentIds,
     DateOnly? ExpectedReturnDate);
+
+
+// Lab 6: lets the xUnit tests start the real API in memory (WebApplicationFactory<Program>).
+// Nothing in the application behavior changes.
+public partial class Program { }

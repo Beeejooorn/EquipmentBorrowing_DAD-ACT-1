@@ -7,4 +7,5 @@
   <Project Path="src/EquipmentBorrowing.Domain/EquipmentBorrowing.Domain.csproj" />
   <Project Path="src/EquipmentBorrowing.Infrastructure/EquipmentBorrowing.Infrastructure.csproj" />
   <Project Path="tests/EquipmentBorrowing.Tests/EquipmentBorrowing.Tests.csproj" />
+  <Project Path="tests/EquipmentBorrowing.Lab6.Tests/EquipmentBorrowing.Lab6.Tests.csproj" />
 </Solution>
