@@ -1,12 +1,39 @@
 # Equipment Borrowing System
 
-This repository contains our ITSD 81 laboratory work on a campus equipment borrowing system. The desktop application uses C#/.NET, Avalonia with MVVM, EF Core, and PostgreSQL.
+This repository contains our ITSD 81 laboratory work on a campus equipment borrowing system. The current Activity 5 version uses an ASP.NET Core HTTP API between the Avalonia desktop and PostgreSQL.
 
-**Lab 4 is the current version.** The notes for Labs 1 to 3 are included below to document how the project developed. Some code and setup instructions in those earlier sections refer to previous versions and no longer apply to the current application.
+The Lab 4 and earlier notes below document earlier versions. Use the Activity 5 instructions first when running the current application.
+
+## Laboratory Activity 5: HTTP API and Desktop Client
+
+### Setup and run
+
+Prerequisites: .NET 10 SDK, PostgreSQL 16 or newer, the `dotnet-ef` tool, and a PostgreSQL database. From `EquipmentBorrowing/`, restore and build with `dotnet restore` and `dotnet build EquipmentBorrowing.slnx`. Set `ConnectionStrings__EquipmentBorrowing` in the API process to a PostgreSQL connection string, or set `ConnectionStrings:EquipmentBorrowing` in the Infrastructure project's .NET user secrets. Keep the password out of committed files. Apply migrations before starting the API:
+
+```powershell
+dotnet ef database update --project src/EquipmentBorrowing.Infrastructure
+dotnet run --no-launch-profile --project src/EquipmentBorrowing.Api --urls http://localhost:5085
+```
+
+The API and database run independently of the desktop. In another terminal, run `dotnet run --project src/EquipmentBorrowing.Desktop` or start `EquipmentBorrowing.Desktop` in Visual Studio. The desktop defaults to `http://localhost:5085`; set `EQUIPMENT_BORROWING_API_URL` to another base URL before starting it if needed. The desktop does not use database credentials or the Infrastructure project. The API exposes its machine-readable contract at `http://localhost:5085/openapi/v1.json` (16 operations). Stop a running process with Ctrl+C.
+
+### Repeatable acceptance data
+
+Create a **disposable** PostgreSQL database whose name ends in `_lab5_acceptance`, point the migration command at it, and apply migrations. Then run [`docs/lab5/sql/reset-acceptance-data.sql`](docs/lab5/sql/reset-acceptance-data.sql) with `psql -v ON_ERROR_STOP=1 -U postgres -d equipmentborrowing_lab5_acceptance -f docs/lab5/sql/reset-acceptance-data.sql`. The script refuses to reset a database with any other name. It clears only the three application data tables and recreates the PDF's S1–S4 students, E1–E7 equipment, and four borrowing records. It prints the server's local test date and expected counts of 4 students, 7 equipment, 3 active borrowings, and 1 returned borrowing.
+
+The reference uses 2026-11-10 as a fixed date. This script uses `CURRENT_DATE` instead: E1 is due yesterday; the remaining active items are due two days later. Record the printed local test date and use the same date offsets for requests. Reset the disposable database before each T01–T08 test unless its steps say otherwise. Resolve IDs from API responses rather than assuming fixed numeric IDs. The existing `equipmentborrowing_lab5` exploratory database and its screenshots are separate from this controlled dataset.
+
+For T05's required rollback test, reset the disposable acceptance database, set the API process's `ConnectionStrings__EquipmentBorrowing` to that database, and set `EQUIPMENT_BORROWING_CHECKOUT_FAULT=after-first-write` before starting the API. The API refuses this fault setting unless the connection string's database name ends in `_lab5_acceptance`. A valid two-item checkout then writes the first item inside its transaction, deliberately fails before commit, and returns safe HTTP 500. Inspect fresh PostgreSQL rows and availability to confirm rollback; clear the fault variable and restart the API for normal requests. Never run the reset or fault test against a shared database.
+
+### Evidence and architecture
+
+The API routes cover API-01 through API-16. The desktop ViewModels call `IDesktopApi`, whose HTTP implementation maps JSON/status responses to existing loading and operation results. The API alone uses Application services, EF Core repositories, transactions, migrations, and PostgreSQL. A stopped API produces a connection error in the desktop; a reachable API with a database failure returns safe HTTP 500 JSON and a different desktop message. The desktop refreshes lists after changes.
+
+The incremental request, response, build, database, and desktop screenshots are indexed in [`docs/lab5/evidence/activity5-setup-checks.md`](docs/lab5/evidence/activity5-setup-checks.md). The acceptance test matrix and baseline mapping are in [`docs/lab5/acceptance-record.md`](docs/lab5/acceptance-record.md). The Lab 4 use case suite and BR-01–19 remain the functional baseline.
 
 ---
 
-## Laboratory Activity 4: PostgreSQL, Checkout, Histories and Search
+## Historical: Laboratory Activity 4 — PostgreSQL, Checkout, Histories and Search
 
 The equipment custodian can use the following screens:
 
