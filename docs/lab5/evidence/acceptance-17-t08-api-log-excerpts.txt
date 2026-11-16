@@ -1,0 +1,18 @@
+T08 controlled API log excerpts, 2026-11-16 local date.
+Source logs were written by run-controlled-recovery.ps1 to separate temporary files.
+Only lines needed to distinguish the failed database connection and recovery are retained here.
+
+Invalid database phase (reachable API):
+  Now listening on: http://localhost:5087
+  An error occurred using the connection to database 'equipmentborrowing_lab5_acceptance_missing' on server 'tcp://localhost:5432'.
+  Npgsql.PostgresException (0x80004005): 3D000: database "equipmentborrowing_lab5_acceptance_missing" does not exist
+  Setting HTTP status code 500.
+  Request finished HTTP/1.1 GET http://localhost:5087/api/v1/equipment - 500 - application/json
+
+Recovered database phase (API restarted with the acceptance database):
+  Now listening on: http://localhost:5087
+  Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+  Setting HTTP status code 200.
+  Request finished HTTP/1.1 GET http://localhost:5087/api/v1/equipment - 200 - application/json
+
+No connection string, password, or stack trace is included in this evidence file.
