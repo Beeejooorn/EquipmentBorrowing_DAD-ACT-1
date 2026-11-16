@@ -117,6 +117,7 @@ try {
     Assert-Equal (Request PUT "/api/v1/students/$newStudentId" @{ studentNumber='ST-500'; fullName='Eva Updated'; contact='eva@example.test' }).Status 200 'T02 student edit'
     Assert-Equal (Request PUT "/api/v1/students/$newStudentId" @{ studentNumber='ST-500'; fullName=' '; contact=$null }).Status 400 'T02 blank name'
     Assert-Equal (Request POST '/api/v1/students' @{ studentNumber=' st-100 '; fullName='Duplicate'; contact=$null }).Status 409 'T02 duplicate number'
+    Assert-Equal (Request PUT "/api/v1/students/$newStudentId" @{ studentNumber=' st-100 '; fullName='Eva Updated'; contact=$null }).Status 409 'T02 duplicate number on update'
     Assert-Equal (Request PATCH "/api/v1/students/$($ids.S1)/eligibility" @{ isEligible=$false }).Status 200 'T02 restrict S1'
     Assert-Equal (Request POST '/api/v1/borrowings' @{ studentId=$ids.S1; equipmentId=$ids.E2; expectedReturnDate=$dueDate }).Status 409 'T02 restricted issue'
     $s1History = (Request GET "/api/v1/students/$($ids.S1)/borrowings").Body | ConvertFrom-Json

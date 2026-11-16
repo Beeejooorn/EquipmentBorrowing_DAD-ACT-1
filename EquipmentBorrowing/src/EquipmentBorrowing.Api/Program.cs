@@ -226,7 +226,7 @@ app.MapPut("/api/v1/students/{id:int}", async (
 
     if (result.Kind == ResultKind.Rejected)
     {
-        bool duplicate = result.Message.Contains("already registered");
+        bool duplicate = result.Message.Contains("already registered") || result.Message.Contains("already belongs");
         return Results.Json(
             new
             {
