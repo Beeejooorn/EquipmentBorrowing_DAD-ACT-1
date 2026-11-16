@@ -87,3 +87,5 @@
 | API-15 student borrowing history | API build succeeded. Student 1 history returned HTTP 200 with Active and Returned records; student 2 returned HTTP 200 with []; unknown student returned HTTP 404 with not_found. | api15-01-build-succeeded.png, api15-02-student-history-http-200.png, api15-03-empty-and-missing-student.png |
 
 | API-16 equipment borrowing history | API build succeeded. Equipment 2 returned HTTP 200 with its Returned borrowing; equipment 4 returned HTTP 200 with []; unknown equipment returned HTTP 404 with not_found. | api16-01-build-succeeded.png through api16-04-empty-equipment-history.png |
+
+| OpenAPI document | Initial build failed because the SDK already includes the JSON Content item; changed Include to Update and the rebuild succeeded. GET /openapi/v1.json returned HTTP 200, OpenAPI 3.0.3, and 16 operations. | openapi-01-duplicate-content-build-failure.png, openapi-02-build-succeeded-after-fix.png, openapi-03-http-200-sixteen-operations.png |

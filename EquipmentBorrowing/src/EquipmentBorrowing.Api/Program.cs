@@ -19,6 +19,10 @@ builder.Services.AddTransient<EquipmentManagementService>();
 
 var app = builder.Build();
 
+app.MapGet("/openapi/v1.json", () => Results.File(
+    Path.Combine(AppContext.BaseDirectory, "OpenApi", "v1.json"),
+    "application/json"));
+
 app.MapGet("/", () => Results.Ok(new
 {
     message = "Equipment Borrowing API is running."
