@@ -52,7 +52,7 @@ public sealed class DesktopApi : IDesktopApi
     public Task<OperationResult> CheckOutMultipleAsync(int studentId, List<int> equipmentIds, DateOnly? expectedReturnDate) =>
         SendAsync(HttpMethod.Post, "api/v1/checkout-requests", new { studentId, equipmentIds, expectedReturnDate });
     public Task<OperationResult> ReturnAsync(int borrowingId) =>
-        SendAsync(HttpMethod.Post, $"api/v1/borrowings/{borrowingId}/return", null);
+        SendAsync(HttpMethod.Post, $"api/v1/borrowings/{borrowingId}/return", new { });
     public Task<OperationResult> RegisterStudentAsync(string? studentNumber, string? fullName, string? contactInfo) =>
         SendAsync(HttpMethod.Post, "api/v1/students", new { studentNumber, fullName, contact = contactInfo });
     public Task<OperationResult> UpdateStudentAsync(int studentId, string? studentNumber, string? fullName, string? contactInfo) =>

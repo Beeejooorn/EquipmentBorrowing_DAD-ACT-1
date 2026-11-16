@@ -13,24 +13,58 @@ This record maps the instructor's T01–T08 catalog to evidence actually capture
 | T07 | API-01–16; UC-01–09/12–16; architecture | Desktop has no Infrastructure reference. The controlled launcher checked API-alone equipment HTTP 200/seven items before opening the desktop. On the controlled seed, the desktop showed all seven items and correct availability; registered/edited ST-500 and EQ-008; issued and returned EQ-008; showed returned history. An independent HTTP client restricted ST-500 (200), and the desktop refresh showed Restricted while retaining history. Fresh PostgreSQL readback confirmed the student edit/restriction, available equipment and returned borrowing: `evidence/acceptance-06-*` through `acceptance-15-*`. Earlier exploratory evidence: `evidence/desktop-01-*` through `desktop-06-*`. | API-alone precheck is in the launcher output, with UI and database evidence captured separately. |
 | T08 | API-01–16; BR-18/19 | On the controlled database, the stopped API produced a transport failure with no HTTP response, the reachable API with an invalid database returned safe HTTP 500, and the restored API returned 200 and EQ-008. Fresh PostgreSQL reads confirmed the committed T07 state was unchanged across both failures and restart. Separate API log excerpts show SQLSTATE 3D000/HTTP 500 followed by a successful database query/HTTP 200, without secrets: `evidence/acceptance-16-t08-controlled-recovery.png`, `acceptance-17-t08-api-log-excerpts.txt`, `acceptance-18-t08-controlled-recovery-logs-preserved.png`. Earlier exploratory desktop screenshots show outage/server-error messages and recovery: `evidence/desktop-03-*`, `desktop-04-*`, `t08-*`. | Desktop outage/server-error UI captures use the separate exploratory database; controlled transport, HTTP, restart and database evidence uses the PDF seed. |
 
+## Expected versus observed results
+
+Execution date: 2026-11-16 (Asia/Manila). Environment: Windows PowerShell 5.1, .NET 10, Avalonia desktop, local PostgreSQL and the isolated Release API on port 5087. Each controlled test reset the disposable database unless its steps required continuity. The preceding table gives the observed outcomes and exact evidence references. The failures, diagnoses, corrections and retests are recorded below this table.
+
+| Test | Expected from the professor's acceptance reference | Observed result | Verdict |
+|---|---|---|---|
+| T01 | Independent reads and OpenAPI return the seeded rows and documented statuses, without writes. | Counts 4 students, 7 equipment, 3 active and 1 returned; expected 200/404/405 results; 16 OpenAPI operations; database counts unchanged. | Pass for recorded checks; see evidence limit above. |
+| T02 | Student create/edit/eligibility work; validation and restriction reject invalid issue; edits persist across restart. | 201/200 success, 400/409 rejection, restriction blocked issue, permit enabled issue; ST-500 edit and counts persisted after restart. | Pass for recorded checks; see evidence limit above. |
+| T03 | Equipment create/edit work; invalid/protected updates fail; availability/history remain correct after restart. | 201/200 success, 400/409 rejection; E1 still borrowed with history; EQ-008 edit and counts persisted after restart. | Pass for recorded checks; see evidence limit above. |
+| T04 | Single issue and return enforce eligibility, availability, date and repeat-return rules, with persistent status. | 201 issue, expected 400/404/409 failures, 200 return, Returned readback, E2 available and result retained after restart. | Pass for recorded checks; see evidence limit above. |
+| T05 | Checkout saves all requested items or none, observes the three-item limit, and rolls back after a first-write failure. | Two-row checkouts and limit cases passed; invalid requests left rows/availability unchanged; injected first-write HTTP 500 left zero partial writes. | Pass for recorded checks; see evidence limit above. |
+| T06 | Search/filter/sort return the expected active/returned, student/equipment and date orders without writes. | All controlled filter/search/ascending/descending and stable-ID-tie assertions passed; counts unchanged. | Pass for recorded checks; see evidence limit above. |
+| T07 | API runs independently; desktop uses HTTP for a complete create/edit/borrow/return/history flow and sees external changes on refresh. | Seven-item API precheck, UI flow and independent eligibility PATCH succeeded; desktop refresh and fresh PostgreSQL reads agreed. | Pass for recorded checks; see evidence limit above. |
+| T08 | Transport outage and reachable server/database failure are distinguishable; safe error, recovery and committed state persist. | Controlled no-response, safe HTTP 500, then HTTP 200 recovery with unchanged PostgreSQL state and separate logs; desktop outage/error/recovery UI was captured on the exploratory database. | Partial: desktop failure UI was not captured on the controlled PDF seed. |
+
 ## Source and baseline
 
 The authentic Lab 4 submission revision is `1e9685a`, confirmed by the submitting student on 2026-11-16; Activity 5 starts at `cde0d70`. The submitted revision remains unchanged. The trailing `s` on Steven Andujar Malnegro's student ID in its `Student.cs` comment was confirmed to be a typo; the current Activity 5 source corrects it to `2022301783`.
 
-The Git history contains separate implementation and evidence commits throughout Activity 5; `evidence/api10-12-borrowing-api-commit.png` is an early desktop capture of that history. The final Activity 5 revision is identified by the `lab5-submitted` tag. The current `main` branch may include work after the tag, so use the tag when reviewing the submitted revision.
+The Git history contains separate implementation and evidence commits throughout Activity 5; `evidence/api10-12-borrowing-api-commit.png` is an early desktop capture of that history. The local `lab5-submitted` tag identifies the previously marked revision. Check that it points to the final audited commit before treating it as the submission revision; later commits are not automatically included in the tag.
 
 The functional baseline is [`../lab4/use-case-suite.md`](../lab4/use-case-suite.md) and [`../lab4/traceability-matrix.md`](../lab4/traceability-matrix.md). Current API routes and response mapping are in [`../../EquipmentBorrowing/src/EquipmentBorrowing.Api/Program.cs`](../../EquipmentBorrowing/src/EquipmentBorrowing.Api/Program.cs); business rules remain in `EquipmentBorrowing.Application/Services`, persistence and migrations in `EquipmentBorrowing.Infrastructure`, and the HTTP desktop adapter in [`../../EquipmentBorrowing/src/EquipmentBorrowing.Desktop/Services/DesktopApi.cs`](../../EquipmentBorrowing/src/EquipmentBorrowing.Desktop/Services/DesktopApi.cs). The published OpenAPI document is [`../../EquipmentBorrowing/src/EquipmentBorrowing.Api/OpenApi/v1.json`](../../EquipmentBorrowing/src/EquipmentBorrowing.Api/OpenApi/v1.json).
 
+| Instructor baseline field | Recorded value |
+|---|---|
+| Lab 4 submitted revision and identification | `1e9685a`, identified by its submission commit message and confirmed by the submitting student on 2026-11-16. |
+| Baseline limitations | Lab 4 source comment misspelled one student ID with a trailing `s`; the Activity 5 revision corrects the comment. No missing original history was reported. |
+| Lab 5 revision and tag | The local `lab5-submitted` tag must be checked against the final audited commit before handoff. |
+| Before / after boundary | Lab 4 desktop constructed local data access. Activity 5 desktop calls `DesktopApi` over HTTP; `Program.cs` hosts the API; `Application/Services` owns rules; `Infrastructure` owns EF Core/PostgreSQL. |
+| Migration / refactoring | API host and HTTP desktop adapter were added, desktop database startup removed, and EF Core PostgreSQL migration `20261111045753_InitialPostgreSqlSchema` creates student, equipment and borrowing relationships. Existing application services preserve their rule boundary. |
+| Reproduction | [`README.md`](../../README.md) gives credentials/configuration, launch, migration, seed and reset steps; [`sql/reset-acceptance-data.sql`](sql/reset-acceptance-data.sql) supplies the PDF seed; evidence is in [`evidence/`](evidence/). |
+
 ## API-to-use-case traceability
 
-| Use cases | Endpoints | Implementation | Evidence |
-|---|---|---|---|
-| UC-01/02 | API-01 equipment list and availability | `Program.cs` equipment GET; `EquipmentQueryService` | `evidence/api01-*`, `desktop-01-*` |
-| UC-12/13/14 | API-02–06 student list, lookup, create, edit, eligibility | `Program.cs` student routes; `StudentQueryService`, `StudentManagementService` | `evidence/api02-*` through `api06-*` |
-| UC-15/16 | API-07–09 equipment lookup, create, edit | `Program.cs` equipment routes; `EquipmentQueryService`, `EquipmentManagementService` | `evidence/api07-*` through `api09-*` |
-| UC-03/06 | API-10–11 single borrow and checkout | `Program.cs` borrowing POST routes; `BorrowEquipmentService` | `evidence/api10-*`, `api11-*` |
-| UC-05 | API-12 return | `Program.cs` return POST; `ReturnEquipmentService` | `evidence/api12-*`, `desktop-05-*`, `desktop-06-*` |
-| UC-04/07/08/09 | API-13–16 borrowing detail, search, student and equipment histories | `Program.cs` borrowing GET routes; `BorrowingQueryService` | `evidence/api13-*` through `api16-*`, `desktop-02-*` |
+The rows below follow the instructor's individual use case matrix. `Program.cs` contains the HTTP route for each API ID; named methods are in `EquipmentBorrowing.Application/Services`. The T references point to the controlled executions in the table above, whose evidence files are linked there. The desktop adapter for all rows is `DesktopApi.cs`.
+
+| Use case | Business rules | API | Application method | Acceptance evidence |
+|---|---|---|---|---|
+| UC-01 catalog | BR-05–07, 10, 18–19 | API-01 | `EquipmentQueryService.GetAllEquipmentAsync` | T01, T07 |
+| UC-02 available equipment | BR-10, 18–19 | API-01 | `EquipmentQueryService.GetAvailableEquipmentAsync` | T01, T07 |
+| UC-03 borrow one item | BR-08–11, 14–16, 18–19 | API-10, 13 | `BorrowEquipmentService.BorrowAsync`; `BorrowingQueryService.GetBorrowingByIdAsync` | T04, T07 |
+| UC-04 active borrowings | BR-14, 18–19 | API-14 | `BorrowingQueryService.GetActiveBorrowingsAsync` | T01, T06, T07 |
+| UC-05 return item | BR-10, 13–16, 18–19 | API-12, 13 | `ReturnEquipmentService.ReturnAsync`; `BorrowingQueryService.GetBorrowingByIdAsync` | T04, T07 |
+| UC-06 multi-item checkout | BR-08–12, 14–16, 18–19 | API-11 | `BorrowEquipmentService.CheckOutMultipleAsync` | T05, T07 |
+| UC-07 student history | BR-14, 18–19 | API-02, 03, 15 | `StudentQueryService.GetAllStudentsAsync` / `GetStudentByIdAsync`; `BorrowingQueryService.GetStudentHistoryAsync` | T01, T06, T07 |
+| UC-08 equipment history | BR-14, 18–19 | API-01, 07, 16 | `EquipmentQueryService.GetAllEquipmentAsync` / `GetEquipmentByIdAsync`; `BorrowingQueryService.GetEquipmentHistoryAsync` | T01, T06, T07 |
+| UC-09 search borrowings | BR-17–19 | API-14 | `BorrowingQueryService.SearchBorrowingsAsync` | T06, T07 |
+| UC-12 register student | BR-01–02, 16, 18–19 | API-04 | `StudentManagementService.RegisterStudentAsync` | T02, T07 |
+| UC-13 update student | BR-01–03, 14, 16, 18–19 | API-02, 03, 05 | `StudentQueryService.GetAllStudentsAsync` / `GetStudentByIdAsync`; `StudentManagementService.UpdateStudentAsync` | T02, T07 |
+| UC-14 eligibility | BR-04, 08, 13–14, 18–19 | API-02, 03, 06 | `StudentQueryService.GetAllStudentsAsync` / `GetStudentByIdAsync`; `StudentManagementService.ChangeEligibilityAsync` | T02, T07 |
+| UC-15 register equipment | BR-05–06, 10, 16, 18–19 | API-08 | `EquipmentManagementService.RegisterEquipmentAsync` | T03, T07 |
+| UC-16 update equipment | BR-05–07, 10, 14, 16, 18–19 | API-01, 07, 09 | `EquipmentQueryService.GetAllEquipmentAsync` / `GetEquipmentByIdAsync`; `EquipmentManagementService.UpdateEquipmentAsync` | T03, T07 |
 
 The desktop calls the same endpoint set through `IDesktopApi`; it has no direct database connection. Changes from Lab 4 are the separate API host, published HTTP contracts, HTTP desktop adapter, and removal of desktop database startup and its local checkout fault controls. Database transaction rules remain in the application and infrastructure layers.
 
