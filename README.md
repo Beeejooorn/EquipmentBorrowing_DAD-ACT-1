@@ -25,6 +25,8 @@ The reference uses 2026-11-10 as a fixed date. This script uses `CURRENT_DATE` i
 
 For T05's required rollback test, reset the disposable acceptance database, set the API process's `ConnectionStrings__EquipmentBorrowing` to that database, and set `EQUIPMENT_BORROWING_CHECKOUT_FAULT=after-first-write` before starting the API. The API refuses this fault setting unless the connection string's database name ends in `_lab5_acceptance`. A valid two-item checkout then writes the first item inside its transaction, deliberately fails before commit, and returns safe HTTP 500. Inspect fresh PostgreSQL rows and availability to confirm rollback; clear the fault variable and restart the API for normal requests. Never run the reset or fault test against a shared database.
 
+On Windows, [`docs/lab5/run-t05-rollback.ps1`](docs/lab5/run-t05-rollback.ps1) automates that reset, starts a separate API on port 5087 with the guarded fault, sends the S4/E2/E6 checkout, compares fresh PostgreSQL state before and after, then stops that API. It prompts once for the local PostgreSQL password and does not change the normal API on port 5085.
+
 ### Evidence and architecture
 
 The API routes cover API-01 through API-16. The desktop ViewModels call `IDesktopApi`, whose HTTP implementation maps JSON/status responses to existing loading and operation results. The API alone uses Application services, EF Core repositories, transactions, migrations, and PostgreSQL. A stopped API produces a connection error in the desktop; a reachable API with a database failure returns safe HTTP 500 JSON and a different desktop message. The desktop refreshes lists after changes.

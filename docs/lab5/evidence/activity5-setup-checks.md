@@ -107,3 +107,5 @@
 | T08 desktop safe server error | With the desktop pointed at the reachable API on port 5086, the catalog displayed “The API responded with an error: Could not load equipment.” It remained open and showed Retry, without exposing database details. | t08-02-desktop-safe-server-error.png |
 
 | T08 desktop recovery | After closing the faulted desktop and stopping the disposable API, the desktop restarted against the working API on port 5085 and loaded the prior equipment state, including the returned Webcam as Available. | t08-03-desktop-recovered-on-working-api.png |
+
+| Controlled acceptance seed | First-time migration and reset script completed on `equipmentborrowing_lab5_acceptance`. The server local date was 2026-11-16; PostgreSQL reported 4 students, 7 equipment items, 3 active and 1 returned borrowing. The initial `__EFMigrationsHistory` query logged an error because the new schema did not yet exist; EF then applied the initial migration successfully. | acceptance-01-controlled-seed-counts.png |
