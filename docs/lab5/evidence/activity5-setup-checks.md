@@ -97,3 +97,7 @@
 | Desktop API outage | After stopping the independent API process and refreshing Active Borrowings, the desktop remained open and displayed “Cannot reach the API. Start the API, then refresh this screen.” | desktop-03-api-unreachable-error.png |
 
 | Desktop API recovery | After restarting the API and clicking Retry, the same desktop window reloaded active borrowing IDs 1 and 3. | desktop-04-api-recovery.png |
+
+| Desktop return through API | The desktop returned borrowing ID 3 for the Webcam, displayed a save confirmation, and refreshed the active list to show only borrowing ID 1. | desktop-05-return-webcam-via-api.png |
+
+| Desktop equipment refresh after return | Reopening the catalog showed EQ-LAB5-003 Lab Five Webcam as Available while EQ-LAB5-001 remained Borrowed. | desktop-06-webcam-available-after-return.png |
