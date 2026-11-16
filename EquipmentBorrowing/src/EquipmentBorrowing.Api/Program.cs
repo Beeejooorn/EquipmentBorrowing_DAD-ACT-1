@@ -2,13 +2,28 @@ using EquipmentBorrowing.Application.Services;
 using EquipmentBorrowing.Infrastructure;
 using EquipmentBorrowing.Infrastructure.Persistence;
 using EquipmentBorrowing.Application.Models;
+using System.Data.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
 string connectionString = DatabaseSettings.GetConnectionString();
 InfrastructureServices.AddInfrastructure(builder.Services, connectionString);
 
-builder.Services.AddSingleton<CheckoutFailureSimulator>();
+// Controlled acceptance fault: enabled only for a disposable acceptance database.
+var checkoutFailureSimulator = new CheckoutFailureSimulator();
+if (builder.Configuration["EQUIPMENT_BORROWING_CHECKOUT_FAULT"] == "after-first-write")
+{
+    var connection = new DbConnectionStringBuilder { ConnectionString = connectionString };
+    string? database = connection.TryGetValue("Database", out object? value) ? value?.ToString() : null;
+    if (database is null || !database.EndsWith("_lab5_acceptance", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException("The checkout fault requires a disposable *_lab5_acceptance database.");
+    }
+
+    checkoutFailureSimulator.Mode = SimulatedCheckoutFailure.AfterFirstWrite;
+}
+
+builder.Services.AddSingleton(checkoutFailureSimulator);
 builder.Services.AddTransient<BorrowEquipmentService>();
 builder.Services.AddTransient<ReturnEquipmentService>();
 builder.Services.AddTransient<EquipmentQueryService>();
