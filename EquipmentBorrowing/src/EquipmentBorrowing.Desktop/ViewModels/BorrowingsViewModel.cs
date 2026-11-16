@@ -1,17 +1,17 @@
-﻿namespace EquipmentBorrowing.Desktop.ViewModels;
+namespace EquipmentBorrowing.Desktop.ViewModels;
 
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 
 // Active Borrowings screen: UC-04 View Active Borrowings, UC-05 Return Equipment.
 public partial class BorrowingsViewModel : ViewModelBase
 {
-    private readonly BorrowingQueryService _borrowingQueryService;
-    private readonly ReturnEquipmentService _returnEquipmentService;
+    private readonly IDesktopApi _borrowingQueryService;
+    private readonly IDesktopApi _returnEquipmentService;
 
     public ObservableCollection<BorrowingRecord> ActiveBorrowings { get; } = new();
 
@@ -28,8 +28,8 @@ public partial class BorrowingsViewModel : ViewModelBase
     private string? confirmText;
 
     public BorrowingsViewModel(
-        BorrowingQueryService borrowingQueryService,
-        ReturnEquipmentService returnEquipmentService)
+        IDesktopApi borrowingQueryService,
+        IDesktopApi returnEquipmentService)
     {
         _borrowingQueryService = borrowingQueryService;
         _returnEquipmentService = returnEquipmentService;

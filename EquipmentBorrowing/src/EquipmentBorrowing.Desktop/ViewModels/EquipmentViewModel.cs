@@ -1,4 +1,4 @@
-﻿namespace EquipmentBorrowing.Desktop.ViewModels;
+namespace EquipmentBorrowing.Desktop.ViewModels;
 
 using System;
 using System.Collections.ObjectModel;
@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 using EquipmentBorrowing.Domain;
 
 // Equipment Catalog screen:
 // UC-01 View Equipment Catalog, UC-02 Find Available Equipment, UC-03 Borrow Equipment.
 public partial class EquipmentViewModel : ViewModelBase
 {
-    private readonly EquipmentQueryService _equipmentQueryService;
-    private readonly StudentQueryService _studentQueryService;
-    private readonly BorrowEquipmentService _borrowEquipmentService;
+    private readonly IDesktopApi _equipmentQueryService;
+    private readonly IDesktopApi _studentQueryService;
+    private readonly IDesktopApi _borrowEquipmentService;
 
     public ObservableCollection<Equipment> EquipmentList { get; } = new();
     public ObservableCollection<Student> Students { get; } = new();
@@ -35,9 +35,9 @@ public partial class EquipmentViewModel : ViewModelBase
     private DateTimeOffset? expectedReturnDate = DateTimeOffset.Now.AddDays(7);
 
     public EquipmentViewModel(
-        EquipmentQueryService equipmentQueryService,
-        StudentQueryService studentQueryService,
-        BorrowEquipmentService borrowEquipmentService)
+        IDesktopApi equipmentQueryService,
+        IDesktopApi studentQueryService,
+        IDesktopApi borrowEquipmentService)
     {
         _equipmentQueryService = equipmentQueryService;
         _studentQueryService = studentQueryService;

@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 
 // Search Borrowings screen: UC-09 Search, Filter and Sort Borrowings.
 // It also lets the user try to return the selected record (UC-05),
 // which shows that a returned record cannot be returned again.
 public partial class BorrowingSearchViewModel : ViewModelBase
 {
-    private readonly BorrowingQueryService _borrowingQueryService;
-    private readonly ReturnEquipmentService _returnEquipmentService;
+    private readonly IDesktopApi _borrowingQueryService;
+    private readonly IDesktopApi _returnEquipmentService;
 
     public ObservableCollection<BorrowingRecord> Results { get; } = new();
 
@@ -44,8 +44,8 @@ public partial class BorrowingSearchViewModel : ViewModelBase
     private BorrowingRecord? selectedRecord;
 
     public BorrowingSearchViewModel(
-        BorrowingQueryService borrowingQueryService,
-        ReturnEquipmentService returnEquipmentService)
+        IDesktopApi borrowingQueryService,
+        IDesktopApi returnEquipmentService)
     {
         _borrowingQueryService = borrowingQueryService;
         _returnEquipmentService = returnEquipmentService;

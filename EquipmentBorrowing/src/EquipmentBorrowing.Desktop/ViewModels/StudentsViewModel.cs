@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 using EquipmentBorrowing.Domain;
 
 // Students screen:
@@ -13,9 +13,9 @@ using EquipmentBorrowing.Domain;
 // UC-07 View Student Borrowing History.
 public partial class StudentsViewModel : ViewModelBase
 {
-    private readonly StudentQueryService _studentQueryService;
-    private readonly StudentManagementService _studentManagementService;
-    private readonly BorrowingQueryService _borrowingQueryService;
+    private readonly IDesktopApi _studentQueryService;
+    private readonly IDesktopApi _studentManagementService;
+    private readonly IDesktopApi _borrowingQueryService;
 
     // Every history request gets a number. If the user selects another student
     // before an older request finishes, the older answer is ignored.
@@ -65,9 +65,9 @@ public partial class StudentsViewModel : ViewModelBase
     private string selectedStudentTitle = "No student selected";
 
     public StudentsViewModel(
-        StudentQueryService studentQueryService,
-        StudentManagementService studentManagementService,
-        BorrowingQueryService borrowingQueryService)
+        IDesktopApi studentQueryService,
+        IDesktopApi studentManagementService,
+        IDesktopApi borrowingQueryService)
     {
         _studentQueryService = studentQueryService;
         _studentManagementService = studentManagementService;

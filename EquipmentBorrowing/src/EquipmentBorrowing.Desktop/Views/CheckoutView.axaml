@@ -74,23 +74,6 @@
 						<TextBlock Text="3. Expected return date (same for all items)" Classes="SectionTitle" Margin="0,10,0,0"/>
 						<DatePicker SelectedDate="{Binding ExpectedReturnDate}" HorizontalAlignment="Left" Width="280" MinHeight="38"/>
 
-						<!-- DEMO / TEST OPTIONS (test seam for the atomicity demonstration) -->
-						<Expander Header="Demo / test options (use only with a disposable database)" Margin="0,15,0,0"
-                                  HorizontalAlignment="Stretch">
-							<StackPanel Spacing="8">
-								<TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.75"
-                                           Text="These switches are a controlled test seam for Lab 4 Appendix C (A06). They are OFF by default."/>
-								<CheckBox IsChecked="{Binding SimulateFailureAfterFirstWrite}">
-									<TextBlock TextWrapping="Wrap"
-                                               Text="Simulate a failure AFTER the first item is written inside the transaction (shows that nothing partial is saved)"/>
-								</CheckBox>
-								<CheckBox IsChecked="{Binding SimulateLostCommit}">
-									<TextBlock TextWrapping="Wrap"
-                                               Text="Simulate a lost connection right after COMMIT (shows the 'unknown outcome' message and refresh)"/>
-								</CheckBox>
-							</StackPanel>
-						</Expander>
-
 					</StackPanel>
 				</Border>
 

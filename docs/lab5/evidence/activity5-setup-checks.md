@@ -89,3 +89,5 @@
 | API-16 equipment borrowing history | API build succeeded. Equipment 2 returned HTTP 200 with its Returned borrowing; equipment 4 returned HTTP 200 with []; unknown equipment returned HTTP 404 with not_found. | api16-01-build-succeeded.png through api16-04-empty-equipment-history.png |
 
 | OpenAPI document | Initial build failed because the SDK already includes the JSON Content item; changed Include to Update and the rebuild succeeded. GET /openapi/v1.json returned HTTP 200, OpenAPI 3.0.3, and 16 operations. | openapi-01-duplicate-content-build-failure.png, openapi-02-build-succeeded-after-fix.png, openapi-03-http-200-sixteen-operations.png |
+
+| Desktop HTTP migration | Desktop services now call the API. Its Infrastructure reference and direct database initialization were removed. The desktop project built with zero errors and warnings. Runtime UI evidence is pending. | pending |

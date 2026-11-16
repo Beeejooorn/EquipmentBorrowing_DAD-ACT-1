@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 using EquipmentBorrowing.Desktop.Models;
 using EquipmentBorrowing.Domain;
 
 // Multi-Item Checkout screen: UC-06.
 public partial class CheckoutViewModel : ViewModelBase
 {
-    private readonly StudentQueryService _studentQueryService;
-    private readonly EquipmentQueryService _equipmentQueryService;
-    private readonly BorrowingQueryService _borrowingQueryService;
-    private readonly BorrowEquipmentService _borrowEquipmentService;
-    private readonly CheckoutFailureSimulator _failureSimulator;
+    private readonly IDesktopApi _studentQueryService;
+    private readonly IDesktopApi _equipmentQueryService;
+    private readonly IDesktopApi _borrowingQueryService;
+    private readonly IDesktopApi _borrowEquipmentService;
 
     // Used to ignore an old "active count" answer when the user already picked another student.
     private int _studentInfoRequestNumber = 0;
@@ -51,26 +50,16 @@ public partial class CheckoutViewModel : ViewModelBase
     [ObservableProperty]
     private string checkoutSummary = "No items in the checkout list yet.";
 
-    // ---- Demo / test options (test seam, see CheckoutFailureSimulator) ----
-
-    [ObservableProperty]
-    private bool simulateFailureAfterFirstWrite;
-
-    [ObservableProperty]
-    private bool simulateLostCommit;
-
     public CheckoutViewModel(
-        StudentQueryService studentQueryService,
-        EquipmentQueryService equipmentQueryService,
-        BorrowingQueryService borrowingQueryService,
-        BorrowEquipmentService borrowEquipmentService,
-        CheckoutFailureSimulator failureSimulator)
+        IDesktopApi studentQueryService,
+        IDesktopApi equipmentQueryService,
+        IDesktopApi borrowingQueryService,
+        IDesktopApi borrowEquipmentService)
     {
         _studentQueryService = studentQueryService;
         _equipmentQueryService = equipmentQueryService;
         _borrowingQueryService = borrowingQueryService;
         _borrowEquipmentService = borrowEquipmentService;
-        _failureSimulator = failureSimulator;
     }
 
     // ---- Loading ----
@@ -302,31 +291,4 @@ public partial class CheckoutViewModel : ViewModelBase
         await LoadAsync();
     }
 
-    // ---- Demo / test options ----
-
-    partial void OnSimulateFailureAfterFirstWriteChanged(bool value)
-    {
-        if (value)
-        {
-            SimulateLostCommit = false;
-            _failureSimulator.Mode = SimulatedCheckoutFailure.AfterFirstWrite;
-        }
-        else if (!SimulateLostCommit)
-        {
-            _failureSimulator.Mode = SimulatedCheckoutFailure.None;
-        }
-    }
-
-    partial void OnSimulateLostCommitChanged(bool value)
-    {
-        if (value)
-        {
-            SimulateFailureAfterFirstWrite = false;
-            _failureSimulator.Mode = SimulatedCheckoutFailure.LostCommitAcknowledgement;
-        }
-        else if (!SimulateFailureAfterFirstWrite)
-        {
-            _failureSimulator.Mode = SimulatedCheckoutFailure.None;
-        }
-    }
 }

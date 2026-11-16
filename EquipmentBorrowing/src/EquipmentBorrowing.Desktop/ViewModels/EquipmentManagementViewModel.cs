@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EquipmentBorrowing.Application.Models;
-using EquipmentBorrowing.Application.Services;
+using EquipmentBorrowing.Desktop.Services;
 using EquipmentBorrowing.Domain;
 
 // Manage Equipment screen: UC-15 Register Equipment, UC-16 Update Equipment Details,
 // UC-08 View Equipment Borrowing History.
 public partial class EquipmentManagementViewModel : ViewModelBase
 {
-    private readonly EquipmentQueryService _equipmentQueryService;
-    private readonly EquipmentManagementService _equipmentManagementService;
-    private readonly BorrowingQueryService _borrowingQueryService;
+    private readonly IDesktopApi _equipmentQueryService;
+    private readonly IDesktopApi _equipmentManagementService;
+    private readonly IDesktopApi _borrowingQueryService;
 
     // Every history request gets a number. If the user selects another item
     // before an older request finishes, the older answer is ignored.
@@ -64,9 +64,9 @@ public partial class EquipmentManagementViewModel : ViewModelBase
     private string selectedEquipmentTitle = "No equipment selected";
 
     public EquipmentManagementViewModel(
-        EquipmentQueryService equipmentQueryService,
-        EquipmentManagementService equipmentManagementService,
-        BorrowingQueryService borrowingQueryService)
+        IDesktopApi equipmentQueryService,
+        IDesktopApi equipmentManagementService,
+        IDesktopApi borrowingQueryService)
     {
         _equipmentQueryService = equipmentQueryService;
         _equipmentManagementService = equipmentManagementService;
