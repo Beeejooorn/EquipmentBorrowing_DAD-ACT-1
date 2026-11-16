@@ -40,9 +40,11 @@ function Set-ApiDatabase([string]$name) {
     $env:ConnectionStrings__EquipmentBorrowing = $connection.ConnectionString
 }
 
-function Start-TestApi {
+function Start-TestApi([string]$phase) {
+    $script:apiOut = Join-Path $env:TEMP "lab5-controlled-recovery-$phase-api-out.log"
+    $script:apiError = Join-Path $env:TEMP "lab5-controlled-recovery-$phase-api-error.log"
     $script:apiProcess = Start-Process -FilePath 'dotnet' -ArgumentList @($apiDll, '--urls', $baseUrl) `
-        -WindowStyle Hidden -PassThru -RedirectStandardOutput $apiOut -RedirectStandardError $apiError
+        -WindowStyle Hidden -PassThru -RedirectStandardOutput $script:apiOut -RedirectStandardError $script:apiError
     for ($attempt = 0; $attempt -lt 20; $attempt++) {
         if ($script:apiProcess.HasExited) { throw "API exited early. See $apiError" }
         try {
@@ -88,7 +90,7 @@ try {
     & dotnet build $apiProject -c Release -m:1 -v:q
     if ($LASTEXITCODE -ne 0) { throw 'API build failed.' }
     Set-ApiDatabase 'equipmentborrowing_lab5_acceptance_missing'
-    Start-TestApi
+    Start-TestApi 'invalid-db'
     try {
         Invoke-WebRequest -UseBasicParsing -Uri ($baseUrl + '/api/v1/equipment') -TimeoutSec 8 | Out-Null
         throw 'Expected HTTP 500 from the reachable API with an invalid database.'
@@ -104,7 +106,7 @@ try {
     Stop-TestApi
 
     Set-ApiDatabase $databaseName
-    Start-TestApi
+    Start-TestApi 'recovered'
     $equipment = Invoke-WebRequest -UseBasicParsing -Uri ($baseUrl + '/api/v1/equipment') -TimeoutSec 8
     Assert-Equal ([int]$equipment.StatusCode) 200 'T08 recovered API equipment HTTP'
     if (-not (($equipment.Content | ConvertFrom-Json) | Where-Object { $_.equipmentCode -eq 'EQ-008' })) {
@@ -113,7 +115,7 @@ try {
     Write-Host 'PASS T08 recovered API contains EQ-008'
     Assert-Equal (Db-State) $before 'T08 committed PostgreSQL state after API restart'
     Write-Host 'PASS: T08 transport failure, safe server/database error and recovery completed.'
-    Write-Host "API logs: $apiOut and $apiError"
+    Write-Host "API logs: $env:TEMP\lab5-controlled-recovery-invalid-db-api-out.log and $env:TEMP\lab5-controlled-recovery-recovered-api-out.log"
 }
 finally {
     Stop-TestApi
