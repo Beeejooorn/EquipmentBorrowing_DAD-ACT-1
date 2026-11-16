@@ -1,0 +1,12 @@
+2026-11-16, repository root: C:\Users\Bjorn\source\repos\EquipmentBorrowing_DAD-ACT-1
+Command: dotnet build EquipmentBorrowing\EquipmentBorrowing.slnx -c Release -m:1 -v:q
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:19.31
+
+This final Release solution build includes the API, desktop, application, domain,
+infrastructure, and test project. Acceptance cases T01-T08 were executed separately
+against the disposable PostgreSQL database as recorded in acceptance-record.md.

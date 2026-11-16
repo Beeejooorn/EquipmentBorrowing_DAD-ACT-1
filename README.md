@@ -31,11 +31,17 @@ On Windows, [`docs/lab5/run-t05-rollback.ps1`](docs/lab5/run-t05-rollback.ps1) a
 
 [`docs/lab5/run-controlled-mutations.ps1`](docs/lab5/run-controlled-mutations.ps1) runs the PDF's T02–T04 student, equipment, and single borrowing/return flows. It resets the disposable seed before each test, checks HTTP results and fresh PostgreSQL state, restarts the isolated API during T04, and prompts once for the local PostgreSQL password.
 
+[`docs/lab5/run-controlled-checkout.ps1`](docs/lab5/run-controlled-checkout.ps1) covers T05's successful multi-item checkout, both three-item limit boundaries, and known rejections with fresh database checks after each case. The separate `run-t05-rollback.ps1` above covers the injected failure after the first write attempt.
+
+[`docs/lab5/run-controlled-desktop.ps1`](docs/lab5/run-controlled-desktop.ps1) starts the API against the disposable seed on port 5087 and opens the desktop against it for T07. Keep its PowerShell window open while using the desktop; closing the desktop stops the isolated API. [`docs/lab5/verify-controlled-desktop.ps1`](docs/lab5/verify-controlled-desktop.ps1) performs a fresh PostgreSQL readback of the T07 student, equipment and returned borrowing without resetting the data.
+
+[`docs/lab5/run-controlled-recovery.ps1`](docs/lab5/run-controlled-recovery.ps1) covers T08's no-response transport failure, reachable API/database HTTP 500, and recovery of committed data after an API restart. It keeps separate temporary logs for the invalid-database and recovered phases.
+
 ### Evidence and architecture
 
 The API routes cover API-01 through API-16. The desktop ViewModels call `IDesktopApi`, whose HTTP implementation maps JSON/status responses to existing loading and operation results. The API alone uses Application services, EF Core repositories, transactions, migrations, and PostgreSQL. A stopped API produces a connection error in the desktop; a reachable API with a database failure returns safe HTTP 500 JSON and a different desktop message. The desktop refreshes lists after changes.
 
-The incremental request, response, build, database, and desktop screenshots are indexed in [`docs/lab5/evidence/activity5-setup-checks.md`](docs/lab5/evidence/activity5-setup-checks.md). The acceptance test matrix and baseline mapping are in [`docs/lab5/acceptance-record.md`](docs/lab5/acceptance-record.md). The Lab 4 use case suite and BR-01–19 remain the functional baseline.
+The incremental request, response, build, database, and desktop screenshots are indexed in [`docs/lab5/evidence/activity5-setup-checks.md`](docs/lab5/evidence/activity5-setup-checks.md). The consolidated T01–T08 execution record and baseline mapping are in [`docs/lab5/acceptance-record.md`](docs/lab5/acceptance-record.md); the route, status, and schema review is in [`docs/lab5/openapi-contract-audit.md`](docs/lab5/openapi-contract-audit.md). The Lab 4 use case suite and BR-01–19 remain the functional baseline.
 
 ---
 
