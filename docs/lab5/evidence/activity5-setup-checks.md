@@ -101,3 +101,9 @@
 | Desktop return through API | The desktop returned borrowing ID 3 for the Webcam, displayed a save confirmation, and refreshed the active list to show only borrowing ID 1. | desktop-05-return-webcam-via-api.png |
 
 | Desktop equipment refresh after return | Reopening the catalog showed EQ-LAB5-003 Lab Five Webcam as Available while EQ-LAB5-001 remained Borrowed. | desktop-06-webcam-available-after-return.png |
+
+| T08 reachable API with database failure | A separate API on port 5086 used a deliberately unreachable database connection. GET /api/v1/equipment returned HTTP 500 with safe JSON `server_error` and `Could not load equipment.` | t08-01-reachable-api-db-error-http-500.png |
+
+| T08 desktop safe server error | With the desktop pointed at the reachable API on port 5086, the catalog displayed “The API responded with an error: Could not load equipment.” It remained open and showed Retry, without exposing database details. | t08-02-desktop-safe-server-error.png |
+
+| T08 desktop recovery | After closing the faulted desktop and stopping the disposable API, the desktop restarted against the working API on port 5085 and loaded the prior equipment state, including the returned Webcam as Available. | t08-03-desktop-recovered-on-working-api.png |
