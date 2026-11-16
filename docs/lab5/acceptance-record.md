@@ -1,6 +1,6 @@
 # Activity 5 acceptance record
 
-This record maps the instructor's T01–T08 catalog to evidence actually captured. The API and desktop implementation is in this repository. Evidence named `acceptance-*` and `t05-01-*` uses the reset S1–S4/E1–E7 seed in the separate disposable `equipmentborrowing_lab5_acceptance` database with the observed local date 2026-11-16. Earlier `api*` and `desktop*` captures are exploratory verification against `equipmentborrowing_lab5` using the server's local date at capture. The repeatable seed is [`sql/reset-acceptance-data.sql`](sql/reset-acceptance-data.sql).
+This record maps the instructor's T01–T08 catalog to evidence actually captured. The [requirement-by-requirement evidence index](requirements-evidence-audit.md) links every main requirement and API-01–16 to specific files. The API and desktop implementation is in this repository. Evidence named `acceptance-*` and `t05-01-*` uses the reset S1–S4/E1–E7 seed in the separate disposable `equipmentborrowing_lab5_acceptance` database with the observed local date 2026-11-16. Earlier `api*` and `desktop*` captures are exploratory verification against `equipmentborrowing_lab5` using the server's local date at capture. The repeatable seed is [`sql/reset-acceptance-data.sql`](sql/reset-acceptance-data.sql).
 
 | Test | Related API / use cases | Captured execution and evidence | Evidence limits |
 |---|---|---|---|
@@ -31,6 +31,8 @@ Execution date: 2026-11-16 (Asia/Manila). Environment: Windows PowerShell 5.1, .
 ## Source and baseline
 
 The authentic Lab 4 submission revision is `1e9685a`, confirmed by the submitting student on 2026-11-16; Activity 5 starts at `cde0d70`. The submitted revision remains unchanged. The trailing `s` on Steven Andujar Malnegro's student ID in its `Student.cs` comment was confirmed to be a typo; the current Activity 5 source corrects it to `2022301783`.
+
+Submission members: Hervy Bjorn C. Tanamal (2022302797) and Steven Andujar Malnegro (2022301783), also recorded in [`Student.cs`](../../EquipmentBorrowing/src/EquipmentBorrowing.Domain/Student.cs). Both members must submit individually if submitting as a pair.
 
 The Git history contains separate implementation and evidence commits throughout Activity 5; `evidence/api10-12-borrowing-api-commit.png` is an early desktop capture of that history. The local `lab5-submitted` tag identifies the previously marked revision. Check that it points to the final audited commit before treating it as the submission revision; later commits are not automatically included in the tag.
 

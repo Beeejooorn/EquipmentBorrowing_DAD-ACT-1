@@ -41,7 +41,7 @@ On Windows, [`docs/lab5/run-t05-rollback.ps1`](docs/lab5/run-t05-rollback.ps1) a
 
 The API routes cover API-01 through API-16. The desktop ViewModels call `IDesktopApi`, whose HTTP implementation maps JSON/status responses to existing loading and operation results. The API alone uses Application services, EF Core repositories, transactions, migrations, and PostgreSQL. A stopped API produces a connection error in the desktop; a reachable API with a database failure returns safe HTTP 500 JSON and a different desktop message. The desktop refreshes lists after changes.
 
-The incremental request, response, build, database, and desktop screenshots are indexed in [`docs/lab5/evidence/activity5-setup-checks.md`](docs/lab5/evidence/activity5-setup-checks.md). The consolidated T01–T08 execution record and baseline mapping are in [`docs/lab5/acceptance-record.md`](docs/lab5/acceptance-record.md); the route, status, and schema review is in [`docs/lab5/openapi-contract-audit.md`](docs/lab5/openapi-contract-audit.md). The Lab 4 use case suite and BR-01–19 remain the functional baseline.
+The requirement-by-requirement evidence index is [`docs/lab5/requirements-evidence-audit.md`](docs/lab5/requirements-evidence-audit.md). The incremental request, response, build, database, and desktop screenshots are indexed in [`docs/lab5/evidence/activity5-setup-checks.md`](docs/lab5/evidence/activity5-setup-checks.md). The consolidated T01–T08 execution record and baseline mapping are in [`docs/lab5/acceptance-record.md`](docs/lab5/acceptance-record.md); the route, status, and schema review is in [`docs/lab5/openapi-contract-audit.md`](docs/lab5/openapi-contract-audit.md). The Lab 4 use case suite and BR-01–19 remain the functional baseline.
 
 ---
 
