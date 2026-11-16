@@ -219,6 +219,39 @@ public static class LabDatabase
         return context.Borrowings.AsNoTracking().Where(b => b.EquipmentId == equipmentId).OrderBy(b => b.Id).ToList();
     }
 
+    // Removes every row (used by tests that need an EMPTY database, for example "empty catalog").
+    public static void EmptyAllTables()
+    {
+        using EquipmentBorrowingDbContext context = NewFreshContext();
+        context.Database.ExecuteSqlRaw(
+            "TRUNCATE \"Borrowings\", \"Students\", \"Equipment\" RESTART IDENTITY CASCADE;");
+    }
+
+    // All rows of all three tables as one text. Take it BEFORE and AFTER a read-only request:
+    // if the two texts are equal, no row at all was changed ("Expected Database State: No changes").
+    public static string Snapshot()
+    {
+        using EquipmentBorrowingDbContext context = NewFreshContext();
+        System.Text.StringBuilder text = new System.Text.StringBuilder();
+
+        foreach (Student s in context.Students.AsNoTracking().OrderBy(x => x.Id))
+        {
+            text.AppendLine($"S|{s.Id}|{s.StudentNumber}|{s.Name}|{s.ContactInfo}|{s.IsAllowedToBorrow}");
+        }
+
+        foreach (Equipment e in context.Equipment.AsNoTracking().OrderBy(x => x.Id))
+        {
+            text.AppendLine($"E|{e.Id}|{e.EquipmentCode}|{e.Name}|{e.Description}|{e.IsAvailable}");
+        }
+
+        foreach (Borrowing b in context.Borrowings.AsNoTracking().OrderBy(x => x.Id))
+        {
+            text.AppendLine($"B|{b.Id}|{b.StudentId}|{b.EquipmentId}|{b.DateBorrowed}|{b.ExpectedReturnDate}|{b.Status}|{b.ReturnedAt}");
+        }
+
+        return text.ToString();
+    }
+
     // ---------- direct SQL (to try to bypass the API and hit the real PostgreSQL rules) ----------
 
     // Runs one SQL statement directly on PostgreSQL.
