@@ -39,6 +39,21 @@ function Array-Count([string]$json) {
     return @((ConvertFrom-Json -InputObject $json)).Count
 }
 
+function Assert-SortOrder([string]$json, [string]$sort, [string]$direction) {
+    $items = @(ConvertFrom-Json -InputObject $json)
+    for ($i = 1; $i -lt $items.Count; $i++) {
+        $previousDate = [string]$items[$i - 1].PSObject.Properties[$sort].Value
+        $currentDate = [string]$items[$i].PSObject.Properties[$sort].Value
+        $comparison = [string]::CompareOrdinal($previousDate, $currentDate)
+        if (($direction -eq 'asc' -and $comparison -gt 0) -or
+            ($direction -eq 'desc' -and $comparison -lt 0) -or
+            ($comparison -eq 0 -and $items[$i - 1].id -gt $items[$i].id)) {
+            throw "T06 $sort $direction order or stable ID tie-break is incorrect."
+        }
+    }
+    Write-Host "PASS T06 $sort $direction ordering and stable ID ties"
+}
+
 function Database-State {
     $value = (& $psql -v ON_ERROR_STOP=1 -t -A -h localhost -p 5432 -U postgres -d $databaseName -f $stateFile).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'The independent database read failed.' }
@@ -141,6 +156,7 @@ SELECT (SELECT count(*) FROM "Students")::text || ',' ||
             $sorted = Request GET "/api/v1/borrowings?sort=$sort&direction=$direction"
             Assert-Equal $sorted.Status 200 "T06 sort $sort $direction"
             Assert-Equal (Array-Count $sorted.Body) 4 "T06 sort count $sort $direction"
+            Assert-SortOrder $sorted.Body $sort $direction
         }
     }
     Assert-Equal (Array-Count (Request GET '/api/v1/borrowings?search=ada&status=Active&sort=expectedReturnDate&direction=desc').Body) 1 'T06 combined filters'

@@ -29,6 +29,8 @@ On Windows, [`docs/lab5/run-t05-rollback.ps1`](docs/lab5/run-t05-rollback.ps1) a
 
 [`docs/lab5/run-controlled-reads.ps1`](docs/lab5/run-controlled-reads.ps1) runs the PDF's T01 and T06 read-only cases on the disposable seed. It resets before each test, starts an isolated API on port 5087, checks status/count/search/filter/sort/empty/missing behavior, compares fresh database counts, and stops the isolated API. It also prompts once for the local PostgreSQL password.
 
+[`docs/lab5/run-controlled-mutations.ps1`](docs/lab5/run-controlled-mutations.ps1) runs the PDF's T02–T04 student, equipment, and single borrowing/return flows. It resets the disposable seed before each test, checks HTTP results and fresh PostgreSQL state, restarts the isolated API during T04, and prompts once for the local PostgreSQL password.
+
 ### Evidence and architecture
 
 The API routes cover API-01 through API-16. The desktop ViewModels call `IDesktopApi`, whose HTTP implementation maps JSON/status responses to existing loading and operation results. The API alone uses Application services, EF Core repositories, transactions, migrations, and PostgreSQL. A stopped API produces a connection error in the desktop; a reachable API with a database failure returns safe HTTP 500 JSON and a different desktop message. The desktop refreshes lists after changes.
