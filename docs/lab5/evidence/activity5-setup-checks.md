@@ -85,3 +85,5 @@
 | API-14 contract correction | The corrected API build succeeded. GET with search=webcam, status=Active, sort=expectedReturnDate and direction=desc returned HTTP 200 with the Webcam borrowing and borrowedDate/returnedDate JSON fields. | api14-06-contract-correction-build-succeeded.png, api14-07-contract-query-http-200.png |
 
 | API-15 student borrowing history | API build succeeded. Student 1 history returned HTTP 200 with Active and Returned records; student 2 returned HTTP 200 with []; unknown student returned HTTP 404 with not_found. | api15-01-build-succeeded.png, api15-02-student-history-http-200.png, api15-03-empty-and-missing-student.png |
+
+| API-16 equipment borrowing history | API build succeeded. Equipment 2 returned HTTP 200 with its Returned borrowing; equipment 4 returned HTTP 200 with []; unknown equipment returned HTTP 404 with not_found. | api16-01-build-succeeded.png through api16-04-empty-equipment-history.png |
