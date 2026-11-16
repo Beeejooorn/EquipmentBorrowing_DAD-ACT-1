@@ -34,6 +34,27 @@ builder.Services.AddTransient<EquipmentManagementService>();
 
 var app = builder.Build();
 
+// Defect fix D-01 (Lab 6, TC6-E03): a request body that is not valid JSON used to produce a 400
+// whose body showed the internal exception text (in Development). Now the caller gets a short,
+// safe message in the same {code, message} shape as every other API error.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (BadHttpRequestException)
+    {
+        context.Response.Clear();
+        context.Response.StatusCode = 400;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            code = "invalid_request",
+            message = "The request could not be read. Check that the body is valid JSON with the expected fields."
+        });
+    }
+});
+
 app.MapGet("/openapi/v1.json", () => Results.File(
     Path.Combine(AppContext.BaseDirectory, "OpenApi", "v1.json"),
     "application/json"));
