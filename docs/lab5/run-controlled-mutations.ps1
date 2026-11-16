@@ -127,6 +127,11 @@ try {
     Assert-Equal (Request PATCH "/api/v1/students/$($ids.S1)/eligibility" @{ isEligible=$true }).Status 200 'T02 repeated eligibility'
     Assert-Equal (Db-Counts) '5,7,3,2' 'T02 final PostgreSQL counts'
     Assert-Equal (Db-Query 'SELECT "Name" FROM "Students" WHERE "StudentNumber" = ''ST-500'';') 'Eva Updated' 'T02 persisted student edit'
+    Stop-Process -Id $apiProcess.Id
+    $apiProcess.WaitForExit()
+    Start-TestApi
+    Assert-Equal ((Request GET "/api/v1/students/$newStudentId").Body | ConvertFrom-Json).fullName 'Eva Updated' 'T02 student edit after API restart'
+    Assert-Equal (Db-Counts) '5,7,3,2' 'T02 PostgreSQL counts after restart'
 
     Reset-Seed T03
     $ids = Read-Ids
@@ -142,6 +147,11 @@ try {
     Assert-Equal (Db-Counts) '4,8,3,1' 'T03 final PostgreSQL counts'
     Assert-Equal (Db-Query 'SELECT "IsAvailable" FROM "Equipment" WHERE "EquipmentCode" = ''EQ-001'';') 'f' 'T03 E1 remains unavailable'
     Assert-Equal (Db-Query 'SELECT count(*) FROM "Borrowings" b JOIN "Equipment" e ON e."Id"=b."EquipmentId" WHERE e."EquipmentCode"=''EQ-001'';') '1' 'T03 E1 history retained'
+    Stop-Process -Id $apiProcess.Id
+    $apiProcess.WaitForExit()
+    Start-TestApi
+    Assert-Equal ((Request GET "/api/v1/equipment/$newEquipmentId").Body | ConvertFrom-Json).name 'Headset Updated' 'T03 equipment edit after API restart'
+    Assert-Equal (Db-Counts) '4,8,3,1' 'T03 PostgreSQL counts after restart'
 
     Reset-Seed T04
     $ids = Read-Ids
